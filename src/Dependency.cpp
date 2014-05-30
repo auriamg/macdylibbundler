@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
+#include <algorithm>
+#include <functional>
+#include <cctype>
+#include <locale>
 #include "Dependency.h"
 #include <iostream>
 #include <cstdlib>
@@ -36,6 +40,11 @@ THE SOFTWARE.
 std::string stripPrefix(std::string in)
 {
     return in.substr(in.rfind("/")+1);
+}
+
+std::string& rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
 }
 
 //the pathes to search for dylibs, store it globally to parse the environment variables only once
@@ -86,7 +95,7 @@ Dependency::Dependency(std::string path)
         char original_file_buffer[PATH_MAX];
         std::string original_file;
         
-        if (not realpath(path.c_str(), original_file_buffer))
+        if (not realpath(rtrim(path).c_str(), original_file_buffer))
         {
             std::cerr << "\n/!\\ WARNING : Cannot resolve symlink '" << path.c_str() << "'" << std::endl;
             original_file = path;
