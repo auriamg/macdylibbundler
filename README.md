@@ -52,30 +52,27 @@ fixes dependencies where bundled libraries depend on each other. If this option 
 </blockquote>
 
 `-i`, `--ignore` (path)
-<blockquote>
-Dylibs in (path) will be ignored. By default, dylibbundler will ignore libraries installed in /usr/lib since they are assumed to be present by default on all OS X installations.*(It is usually recommend not to install additional stuff in `/usr/`, always use ` /usr/local/` or another prefix to avoid confusion between system libs and libs you added yourself)*
-</blockquote>
+> Dylibs in (path) will be ignored. By default, dylibbundler will ignore libraries installed in `/usr/lib` since they are assumed to be present by default on all OS X installations.*(It is usually recommend not to install additional stuff in `/usr/`, always use ` /usr/local/` or another prefix to avoid confusion between system libs and libs you added yourself)*
+
 
 `-d`, `--dest-dir` (directory)
-<blockquote>
-Sets the name of the directory in wich distribution-ready dylibs will be placed, relative to the current working directory. (Default is `./libs`) For an app bundle, it is often conveniant to set it to something like `./MyApp.app/Contents/libs`.
-</blockquote>
+> Sets the name of the directory in wich distribution-ready dylibs will be placed, relative to the current working directory. (Default is `./libs`) For an app bundle, it is often conveniant to set it to something like `./MyApp.app/Contents/libs`.
+
 
 `-p`, `--install-path` (libraries install path)
-<blockquote>Sets the "inner" installation path of libraries, usually inside the bundle and relative to executable. (Default is `@executable_path/../libs/`,
-which points to a directory named `libs` inside the `Contents` directory of the bundle.)
-</blockquote>
+> Sets the "inner" installation path of libraries, usually inside the bundle and relative to executable. (Default is `@executable_path/../libs/`, which points to a directory named `libs` inside the `Contents` directory of the bundle.)
+
 
 *The difference between `-d` and `-p` is that `-d` is the location dylibbundler will put files at, while `-p` is the location where the libraries will be expected to be found when you launch the app. Both are often related.*
 
 `-of`, `--overwrite-files`
-<blockquote>When copying libraries to the output directory, allow overwriting files when one with the same name already exists.</blockquote>
+> When copying libraries to the output directory, allow overwriting files when one with the same name already exists.
 
 `-od`, `--overwrite-dir`
-<blockquote>If the output directory already exists, completely erase its current content before adding anything to it. (This option implies --create-dir)</blockquote>
+> If the output directory already exists, completely erase its current content before adding anything to it. (This option implies --create-dir)
 
 `-cd`, `--create-dir`
-<blockquote>If the output directory does not exist, create it.</blockquote>
+> If the output directory does not exist, create it.
 
 A command may look like
 `% dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld -d ./HelloWorld.app/Contents/libs/`
