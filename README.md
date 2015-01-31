@@ -7,7 +7,7 @@ About
 
 Mac OS X intoduced an innovative and very useful way to package applications : app bundles.
 While their design has all that is needed to ease distribution of resources and frameworks, it
-seems like dynamic libraries (.dylib) are very complicated to distribute. Sure, applications developped
+seems like dynamic libraries (.dylib) are very complicated to distribute. Sure, applications developed
 specifically for OS X won't make use of them, however applications ported from Linux or other Unices may have
 dependencies that will only compile as dylibs. By default, there exists no mecanism to bundle them but some command-line utilities provided by Apple - however it turns out that for a single program it is often necessary to issue dozens of commands! This often leads each porter to develop their own "home solution" wich are often hacky, poorly portable and/or unoptimal.
 
