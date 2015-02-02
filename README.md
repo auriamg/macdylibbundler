@@ -5,7 +5,7 @@ mac dylib bundler
 About
 -----
 
-Mac OS X intoduced an innovative and very useful way to package applications : app bundles.
+Mac OS X introduced an innovative and very useful way to package applications : app bundles.
 While their design has all that is needed to ease distribution of resources and frameworks, it
 seems like dynamic libraries (.dylib) are very complicated to distribute. Sure, applications developed
 specifically for OS X won't make use of them, however applications ported from Linux or other Unices may have
