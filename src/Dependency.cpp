@@ -79,6 +79,10 @@ void initSearchPathes(){
             pathes.push_back(item);
         }
     }
+    for(const auto & path : pathes)
+    {
+      std::cout<<"'"<<path<<"'"<<std::endl;
+    }
 }
 
 // if some libs are missing prefixes, this will be set to true
@@ -139,11 +143,15 @@ Dependency::Dependency(std::string path)
     //If the location is still unknown, ask the user for search path
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
-      if(prefix == "@loader_path/")
-      {
-        std::cerr<<"Should be looking in DYLD_FALLBACK_LIBRARY"<<std::endl;
-#warning "CHANGE ME"
-      }
+      //if(prefix == "@loader_path/")
+      //{
+      //  for(const auto & dyld_prefix : dyld_prefixes)
+      //  {
+      //    if(fileExists(dyld_prefix + "/" + filename))
+      //    {
+      //    }
+      //  }
+      //}
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
         
