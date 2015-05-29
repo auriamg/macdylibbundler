@@ -139,6 +139,11 @@ Dependency::Dependency(std::string path)
     //If the location is still unknown, ask the user for search path
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
+      if(prefix == "@loader_path/")
+      {
+        std::cerr<<"Should be looking in DYLD_FALLBACK_LIBRARY"<<std::endl;
+#warning "CHANGE ME"
+      }
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
         

@@ -46,6 +46,10 @@ void changeLibPathsOnFile(std::string file_to_fix)
 void addDependency(std::string path)
 {
     Dependency dep(path);
+    if(dep.get_ignore())
+    {
+      return;
+    }
     
     // we need to check if this library was already added to avoid duplicates
     const int dep_amount = deps.size();
