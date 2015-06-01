@@ -94,7 +94,7 @@ void collectDependencies(std::string filename)
         if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
         
         addDependency( // trim useless info, keep only library name
-                       lines[n].substr(1, lines[n]rfind(" (") - 1)
+                       lines[n].substr(1, lines[n].rfind(" (") - 1)
                        );
     }
 }
@@ -120,7 +120,7 @@ void collectSubDependencies()
                 if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
                 
                 addDependency( // trim useless info, keep only library name
-                               lines[n].substr(1, lines[n]rfind(" (") - 1) 
+                               lines[n].substr(1, lines[n].rfind(" (") - 1) 
                                );
             }//next
         }//next
