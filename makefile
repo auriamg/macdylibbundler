@@ -1,3 +1,6 @@
+DESTDIR=
+PREFIX=/usr/local
+
 dylibbundler:
 	g++ -c -I./src ./src/Settings.cpp -o ./Settings.o
 	g++ -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
@@ -11,5 +14,5 @@ clean:
 	rm -f ./dylibbundler
 	
 install: dylibbundler
-	cp ./dylibbundler /usr/local/bin/dylibbundler
-	chmod 775 /usr/local/bin/dylibbundler
+	cp ./dylibbundler $(DESTDIR)$(PREFIX)/bin/dylibbundler
+	chmod 775 $(DESTDIR)$(PREFIX)/bin/dylibbundler
