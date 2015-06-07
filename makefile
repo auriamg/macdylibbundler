@@ -1,6 +1,8 @@
 DESTDIR=
 PREFIX=/usr/local
 
+all: dylibbundler
+
 dylibbundler:
 	g++ -c -I./src ./src/Settings.cpp -o ./Settings.o
 	g++ -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
