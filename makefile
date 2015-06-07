@@ -4,12 +4,12 @@ PREFIX=/usr/local
 all: dylibbundler
 
 dylibbundler:
-	g++ -c -I./src ./src/Settings.cpp -o ./Settings.o
-	g++ -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
-	g++ -c -I./src ./src/Dependency.cpp -o ./Dependency.o
-	g++ -c -I./src ./src/main.cpp -o ./main.o
-	g++ -c -I./src ./src/Utils.cpp -o ./Utils.o
-	g++ -o ./dylibbundler ./Settings.o ./DylibBundler.o ./Dependency.o ./main.o ./Utils.o
+	$(CXX) -c -I./src ./src/Settings.cpp -o ./Settings.o
+	$(CXX) -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
+	$(CXX) -c -I./src ./src/Dependency.cpp -o ./Dependency.o
+	$(CXX) -c -I./src ./src/main.cpp -o ./main.o
+	$(CXX) -c -I./src ./src/Utils.cpp -o ./Utils.o
+	$(CXX) -o ./dylibbundler ./Settings.o ./DylibBundler.o ./Dependency.o ./main.o ./Utils.o
 
 clean:
 	rm -f *.o
