@@ -18,3 +18,5 @@ clean:
 install: dylibbundler
 	cp ./dylibbundler $(DESTDIR)$(PREFIX)/bin/dylibbundler
 	chmod 775 $(DESTDIR)$(PREFIX)/bin/dylibbundler
+
+.PHONY: all clean install
