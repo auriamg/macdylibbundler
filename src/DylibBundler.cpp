@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "DylibBundler.h"
 #include <iostream>
+#include <cstdio>
 #include <cstdlib>
 #include "Utils.h"
 #include "Settings.h"

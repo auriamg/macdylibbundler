@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <locale>
 #include "Dependency.h"
 #include <iostream>
+#include <cstdio>
 #include <cstdlib>
 #include <sys/param.h>
 #include "Utils.h"

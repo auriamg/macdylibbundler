@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cstdio>
 #include <vector>
 #include "Settings.h"
 

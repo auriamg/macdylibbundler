@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <unistd.h>
 #include <iostream>
+#include <cstdio>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
