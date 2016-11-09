@@ -88,27 +88,24 @@ bool missing_prefixes = false;
 
 Dependency::Dependency(std::string path)
 {
-    // check if given path is a symlink
-    std::string cmd = "readlink -n " + path;
-    const bool is_symlink = system( (cmd+" > /dev/null").c_str())==0;
-    if (is_symlink)
+    char original_file_buffer[PATH_MAX];
+    std::string original_file;
+
+    if (not realpath(rtrim(path).c_str(), original_file_buffer))
     {
-        char original_file_buffer[PATH_MAX];
-        std::string original_file;
-        
-        if (not realpath(rtrim(path).c_str(), original_file_buffer))
-        {
-            std::cerr << "\n/!\\ WARNING : Cannot resolve symlink '" << path.c_str() << "'" << std::endl;
-            original_file = path;
-        }
-        else
-        {
-            original_file = original_file_buffer;
-        }
-        //original_file = original_file.substr(0, original_file.find("\n") );
-        
+        std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
+        original_file = path;
+    }
+    else
+    {
+        original_file = original_file_buffer;
+    }
+
+    // check if given path is a symlink
+    if (original_file != rtrim(path))
+    {
         filename = stripPrefix(original_file);
-        prefix = path.substr(0, path.rfind("/")+1);
+        prefix = original_file.substr(0, original_file.rfind("/")+1);
         addSymlink(path);
     }
     else
@@ -194,7 +191,7 @@ std::string Dependency::getInnerPath()
 }
 
 
-void Dependency::addSymlink(std::string s){ symlinks.push_back(stripPrefix(s)); }
+void Dependency::addSymlink(std::string s){ symlinks.push_back(s); }
 
 // comapres the given Dependency with this one. If both refer to the same file,
 // it returns true and merges both entries into one.
@@ -240,7 +237,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
     for(int n=0; n<symamount; n++)
     {
         std::string command = std::string("install_name_tool -change ") +
-        prefix+symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
+        symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
         
         if( systemp( command ) != 0 )
         {
