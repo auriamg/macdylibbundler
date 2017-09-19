@@ -9,7 +9,7 @@ Mac OS X introduced an innovative and very useful way to package applications : 
 While their design has all that is needed to ease distribution of resources and frameworks, it
 seems like dynamic libraries (.dylib) are very complicated to distribute. Sure, applications developed
 specifically for OS X won't make use of them, however applications ported from Linux or other Unices may have
-dependencies that will only compile as dylibs. By default, there exists no mecanism to bundle them but some command-line utilities provided by Apple - however it turns out that for a single program it is often necessary to issue dozens of commands! This often leads each porter to develop their own "home solution" wich are often hacky, poorly portable and/or unoptimal.
+dependencies that will only compile as dylibs. By default, there exists no mechanism to bundle them but some command-line utilities provided by Apple - however it turns out that for a single program it is often necessary to issue dozens of commands! This often leads each porter to develop their own "home solution" wich are often hacky, poorly portable and/or nonoptimal.
 
 **dylibbundler** is a small command-line programs that aims to make bundling .dylibs as easy as possible.
 It automatically determines which dylibs are needed by your program, copies these libraries inside the app bundle, and fixes both them and the executable to be ready for distribution... all this with a single command on the teminal! It will also work if your program uses plug-ins that have dependencies too.
