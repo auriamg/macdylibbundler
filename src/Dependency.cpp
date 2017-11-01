@@ -193,15 +193,16 @@ std::string Dependency::getInnerPath()
 
 void Dependency::addSymlink(std::string s){ symlinks.push_back(s); }
 
-// comapres the given Dependency with this one. If both refer to the same file,
+// Compares the given Dependency with this one. If both refer to the same file,
 // it returns true and merges both entries into one.
 bool Dependency::mergeIfSameAs(Dependency& dep2)
 {
     if(dep2.getOriginalFileName().compare(filename) == 0)
     {
-        const int samount = dep2.getSymlinkAmount();
-        for(int n=0; n<samount; n++)
-            addSymlink( dep2.getSymlink(n) ); // FIXME - there may be duplicate symlinks
+        const int samount = getSymlinkAmount();
+        for(int n=0; n<samount; n++) {
+            dep2.addSymlink(getSymlink(n)); // FIXME - there may be duplicate symlinks
+        }
         return true;
     }
     return false;
