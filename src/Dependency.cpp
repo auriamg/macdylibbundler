@@ -135,7 +135,8 @@ Dependency::Dependency(std::string path)
     }
     
     //If the location is still unknown, ask the user for search path
-    if( prefix.empty() || !fileExists( prefix+filename ) )
+    if( !Settings::isPrefixIgnored(prefix)
+        && ( prefix.empty() || !fileExists( prefix+filename ) ) )
     {
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
