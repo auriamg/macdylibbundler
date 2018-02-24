@@ -31,6 +31,7 @@ namespace Settings
 {
     
 bool isPrefixBundled(std::string prefix);
+bool isPrefixIgnored(std::string prefix);
 void ignore_prefix(std::string prefix);
     
 bool canOverwriteFiles();
