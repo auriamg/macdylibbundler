@@ -91,6 +91,7 @@ bool isPrefixBundled(std::string prefix)
 {
     if(prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
+    if(prefix.find("@loader_path") != std::string::npos) return false;
     if(prefix.compare("/usr/lib/") == 0) return false;
     if(isPrefixIgnored(prefix)) return false;
     
