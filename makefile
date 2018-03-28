@@ -1,15 +1,19 @@
 DESTDIR=
 PREFIX=/usr/local
+CXXFLAGS = -O1 -g \ 
+	-fsanitize=address \
+	-fno-omit-frame-pointer \
+	-fno-optimize-sibling-calls
 
 all: dylibbundler
 
 dylibbundler:
-	$(CXX) -c -I./src ./src/Settings.cpp -o ./Settings.o
-	$(CXX) -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
-	$(CXX) -c -I./src ./src/Dependency.cpp -o ./Dependency.o
-	$(CXX) -c -I./src ./src/main.cpp -o ./main.o
-	$(CXX) -c -I./src ./src/Utils.cpp -o ./Utils.o
-	$(CXX) -o ./dylibbundler ./Settings.o ./DylibBundler.o ./Dependency.o ./main.o ./Utils.o
+	$(CXX) $(CXXFLAGS) -c -I./src ./src/Settings.cpp -o ./Settings.o
+	$(CXX) $(CXXFLAGS) -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
+	$(CXX) $(CXXFLAGS) -c -I./src ./src/Dependency.cpp -o ./Dependency.o
+	$(CXX) $(CXXFLAGS) -c -I./src ./src/main.cpp -o ./main.o
+	$(CXX) $(CXXFLAGS) -c -I./src ./src/Utils.cpp -o ./Utils.o
+	$(CXX) $(CXXFLAGS) -o ./dylibbundler ./Settings.o ./DylibBundler.o ./Dependency.o ./main.o ./Utils.o
 
 clean:
 	rm -f *.o
