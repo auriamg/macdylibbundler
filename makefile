@@ -1,6 +1,6 @@
 DESTDIR=
 PREFIX=/usr/local
-CXXFLAGS = -O1 -g \ 
+CXXFLAGS = -O1 -g \
 	-fsanitize=address \
 	-fno-omit-frame-pointer \
 	-fno-optimize-sibling-calls
@@ -18,7 +18,7 @@ dylibbundler:
 clean:
 	rm -f *.o
 	rm -f ./dylibbundler
-	
+
 install: dylibbundler
 	cp ./dylibbundler $(DESTDIR)$(PREFIX)/bin/dylibbundler
 	chmod 775 $(DESTDIR)$(PREFIX)/bin/dylibbundler
