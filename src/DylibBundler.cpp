@@ -111,11 +111,11 @@ void collectSubDependencies()
     while(true)
     {
         dep_amount = deps.size();
-        for(int n=0; n<dep_amount; n++)
+        for(int m=0; m<dep_amount; m++)
         {
             std::cout << "."; fflush(stdout);
             std::vector<std::string> lines;
-            collectDependencies(deps[n].getOriginalPath(), lines);
+            collectDependencies(deps[m].getOriginalPath(), lines);
             
             const int line_amount = lines.size();
             for(int n=0; n<line_amount; n++)
@@ -123,7 +123,7 @@ void collectSubDependencies()
                 if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
                 if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
                 
-		std::cout <<  (deps[n].getOriginalPath())
+		std::cout <<  (deps[m].getOriginalPath())
 			  << " -> "
 			  << lines[n].substr(1, lines[n].rfind(" (") - 1)<< std::endl;
                 addDependency( // trim useless info, keep only library name
