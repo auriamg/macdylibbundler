@@ -34,7 +34,7 @@ class Library;
 void tokenize(const std::string& str, const char* delimiters, std::vector<std::string>*);
 bool fileExists( std::string filename );
 
-void copyFile(std::string from, std::string to);
+void copyFile(const std::string & from, const std::string & to);
 
 // executes a command in the native shell and returns output in string
 std::string system_get_output(std::string cmd);

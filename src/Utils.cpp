@@ -104,7 +104,7 @@ void fixLibDependency(string old_lib_path, string new_lib_name, string target_fi
     }
 }
 
-void copyFile(string from, string to)
+void copyFile(const string & from, const string & to)
 {
     bool override = Settings::canOverwriteFiles();
     if(!override)
