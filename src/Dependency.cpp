@@ -182,11 +182,11 @@ void Dependency::print()
         std::cout << "     symlink --> " << symlinks[n].c_str() << std::endl;;
 }
 
-std::string Dependency::getInstallPath()
+std::string Dependency::getInstallPath() const
 {
     return Settings::destFolder() + new_name;
 }
-std::string Dependency::getInnerPath()
+std::string Dependency::getInnerPath() const
 {
     return Settings::inside_lib_path() + new_name;
 }
@@ -209,7 +209,7 @@ bool Dependency::mergeIfSameAs(Dependency& dep2)
     return false;
 }
 
-void Dependency::copyYourself()
+void Dependency::copyYourself() const
 {
     copyFile(getOriginalPath(), getInstallPath());
     

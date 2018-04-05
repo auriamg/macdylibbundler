@@ -41,19 +41,18 @@ class Dependency
 public:
     Dependency(std::string path);
 
-    void print();
+    void print() const;
 
     std::string getOriginalFileName() const{ return filename; }
     std::string getOriginalPath() const{ return prefix+filename; }
-    std::string getInstallPath();
-    std::string getInnerPath();
-        
     void addSymlink(std::string s);
     int getSymlinkAmount() const{ return symlinks.size(); }
 
     std::string getSymlink(const int i) const{ return symlinks[i]; }
     std::string getPrefix() const{ return prefix; }
 
+    std::string getInstallPath() const;
+    std::string getInnerPath() const;
     void copyYourself();
     void fixFileThatDependsOnMe(std::string file);
     
