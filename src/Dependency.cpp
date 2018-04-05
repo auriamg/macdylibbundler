@@ -149,11 +149,11 @@ Dependency::Dependency(std::string path)
             std::cin >> buffer;
             prefix = buffer;
             std::cout << std::endl;
-            
-            if(prefix.compare("quit")==0) exit(1);
-            
+
+            if(std::cin.eof() || std::cin.fail() || prefix.compare("quit")==0) exit(1);
+
             if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
-            
+
             if( !fileExists( prefix+filename ) )
             {
                 std::cerr << (prefix+filename) << " does not exist. Try again" << std::endl;
