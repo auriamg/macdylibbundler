@@ -27,38 +27,58 @@ THE SOFTWARE.
 #define _depend_h_
 
 #include <string>
-#include <vector>
+#include <map>
 
 class Dependency
 {
+ public:
+    typedef std::multimap<std::string,std::string> filenamelist;
+ protected:
     // origin
     std::string filename;
     std::string prefix;
-    std::vector<std::string> symlinks;
-    
+    filenamelist dependents;
+
     // installation
     std::string new_name;
 public:
-    Dependency(std::string path);
+    Dependency(std::string path,
+	       const std::string & dependent);
 
     void print() const;
 
     std::string getOriginalFileName() const{ return filename; }
     std::string getOriginalPath() const{ return prefix+filename; }
-    void addSymlink(std::string s);
-    int getSymlinkAmount() const{ return symlinks.size(); }
-
-    std::string getSymlink(const int i) const{ return symlinks[i]; }
     std::string getPrefix() const{ return prefix; }
 
     std::string getInstallPath() const;
     std::string getInnerPath() const;
-    void copyYourself();
-    void fixFileThatDependsOnMe(std::string file);
-    
-    // comapres the given Dependency with this one. If both refer to the same file,
-    // it returns true and merges both entries into one.
-    bool mergeIfSameAs(Dependency& dep2);
+
+    void addSymlink(const std::string & symlink,
+		    const std::string & dependent) {
+	    dependents.emplace(symlink,dependent);
+    }
+    filenamelist::const_iterator dependentsBegin() { return dependents.begin(); }
+    filenamelist::const_iterator dependentsEnd() { return dependents.end(); }
+
+    void copyYourself() const;
+    void fixFileThatDependsOnMe(const std::string & file,
+				const std::string & symlink);
+    void fixFilesThatDependOnMe() {
+	    for (filenamelist::iterator i = dependents.begin();
+		 i!= dependents.end(); ++i) {
+		    fixFileThatDependsOnMe(i->second, i->first);
+	    }
+    }
+
+    void merge(const Dependency& dep2) {
+	dependents.insert(dep2.dependents.begin(),
+			  dep2.dependents.end());
+    }
+
+    bool operator < (const Dependency & o) const {
+	    return (filename < o.filename || (filename == o.filename  && prefix < o.prefix));
+    }
 };
 
 

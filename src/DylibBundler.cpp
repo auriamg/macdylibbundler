@@ -26,38 +26,47 @@ THE SOFTWARE.
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <set>
+#include <queue>
 #include "Utils.h"
 #include "Settings.h"
 #include "Dependency.h"
 
 
-std::vector<Dependency> deps;
+typedef std::set<Dependency> DependencyMap;
+DependencyMap deps;
+std::queue <std::string> openDeps;
 
+
+void addOpenDeps(const std::string & path)
+{
+	openDeps.push(path);
+	deps.emplace(path,"");
+}
+
+#if 0
 void changeLibPathsOnFile(std::string file_to_fix)
 {
     std::cout << "\n* Fixing dependencies on " << file_to_fix.c_str() << std::endl;
-    
-    const int dep_amount = deps.size();
-    for(int n=0; n<dep_amount; n++)
-    {
-        deps[n].fixFileThatDependsOnMe(file_to_fix);
-    }
+    deps[file_to_fix].fixFilesThatDependOnMe();
 }
+#endif
 
-void addDependency(std::string path)
+
+Dependency & addDependency(const std::string & path,
+			   const std::string & dependent)
 {
-    Dependency dep(path);
-    
-    // we need to check if this library was already added to avoid duplicates
-    const int dep_amount = deps.size();
-    for(int n=0; n<dep_amount; n++)
-    {
-        if(dep.mergeIfSameAs(deps[n])) return;
-    }
-    
-    if(!Settings::isPrefixBundled(dep.getPrefix())) return;
-    
-    deps.push_back(dep);
+    Dependency dep(path,dependent);
+
+    DependencyMap::iterator pos = deps.find(dep);
+    if (pos == deps.end()) {
+	    pos = deps.insert(dep).first;
+	    if(Settings::isPrefixBundled(dep.getPrefix()))
+		    openDeps.push(dep.getOriginalPath());
+
+    } else
+	    const_cast<Dependency &>(*pos).merge(dep);
+    return const_cast<Dependency &>(*pos);
 }
 
 /*
@@ -74,76 +83,97 @@ void collectDependencies(std::string filename, std::vector<std::string>& lines)
         std::cerr << "Cannot find file " << filename << " to read its dependencies" << std::endl;
         exit(1);
     }
-    
+
     // split output
     tokenize(output, "\n", &lines);
 }
 
-
+// copying the string is ok here, since the original might not be stable.
 void collectDependencies(std::string filename)
 {
+    DependencyMap::iterator d = deps.find(Dependency(filename,""));
+    if (d == deps.end()) {
+	    std::cerr << "Internal error: Dependency " << filename << " is not initialized" << std::endl;
+	    exit(1);
+    }
+    Dependency & dep = const_cast<Dependency &>(*d);
+    filename = dep.getOriginalPath();
+
     std::vector<std::string> lines;
     collectDependencies(filename, lines);
-       
+
     std::cout << "."; fflush(stdout);
-    
+
+    std::string newlibrary;
     const int line_amount = lines.size();
     for(int n=0; n<line_amount; n++)
     {
+	newlibrary = lines[n];
         std::cout << "."; fflush(stdout);
-        if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
-        if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
-        
-	std::cout <<  filename
+	if (newlibrary.empty()) continue; // ignore empty lines
+        if (newlibrary[0] != '\t') continue; // only lines beginning with a tab interest us
+        if (newlibrary.find(".framework") != std::string::npos ) continue;
+	// Ignore frameworks, we can not handle them
+
+	// trim useless info, keep only library name
+	newlibrary = newlibrary.substr(1, lines[n].rfind(" (") - 1);
+	std::cout << filename
 		  << " -> "
-		  << lines[n].substr(1, lines[n].rfind(" (") - 1) << std::endl;
-        addDependency( // trim useless info, keep only library name
-                       lines[n].substr(1, lines[n].rfind(" (") - 1)
-                       );
+		  << newlibrary << std::endl;
+	addDependency(newlibrary,filename);
     }
 }
 void collectSubDependencies()
 {
     // print status to user
     int dep_amount = deps.size();
-    
+
     // recursively collect each dependencie's dependencies
-    while(true)
+    while(!openDeps.empty())
     {
+	    collectDependencies(openDeps.front());
+	    openDeps.pop();
+    }
+#if 0
+#if 0
         dep_amount = deps.size();
         for(int m=0; m<dep_amount; m++)
         {
             std::cout << "."; fflush(stdout);
             std::vector<std::string> lines;
             collectDependencies(deps[m].getOriginalPath(), lines);
-            
+
             const int line_amount = lines.size();
             for(int n=0; n<line_amount; n++)
             {
                 if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
                 if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
-                
+
 		std::cout <<  (deps[m].getOriginalPath())
 			  << " -> "
 			  << lines[n].substr(1, lines[n].rfind(" (") - 1)<< std::endl;
                 addDependency( // trim useless info, keep only library name
-                               lines[n].substr(1, lines[n].rfind(" (") - 1) 
+                               lines[n].substr(1, lines[n].rfind(" (") - 1)
                                );
             }//next
+#else
+	    collectDependencies(deps[m].getOriginalPath());
+#endif
         }//next
-        
+
         if(deps.size() == dep_amount) break; // no more dependencies were added on this iteration, stop searching
     }
+#endif
 }
 
 void createDestDir()
 {
     std::string dest_folder = Settings::destFolder();
     std::cout << "* Checking output directory " << dest_folder.c_str() << std::endl;
-    
+
     // ----------- check dest folder stuff ----------
     bool dest_exists = fileExists(dest_folder);
-    
+
     if(dest_exists and Settings::canOverwriteDir())
     {
         std::cout << "* Erasing old output directory " << dest_folder.c_str() << std::endl;
@@ -155,10 +185,10 @@ void createDestDir()
         }
         dest_exists = false;
     }
-    
+
     if(!dest_exists)
     {
-        
+
         if(Settings::canCreateDir())
         {
             std::cout << "* Creating output directory " << dest_folder.c_str() << std::endl;
@@ -175,35 +205,30 @@ void createDestDir()
             exit(1);
         }
     }
-    
+
 }
 
 void doneWithDeps_go()
 {
     std::cout << std::endl;
-    const int dep_amount = deps.size();
-    // print info to user
-    for(int n=0; n<dep_amount; n++)
-    {
-        deps[n].print();
+    for (DependencyMap::iterator i = deps.begin();
+	 i != deps.end(); ++i) {
+        i->print();
     }
     std::cout << std::endl;
-    
+
     // copy files if requested by user
     if(Settings::bundleLibs())
     {
         createDestDir();
-        
-        for(int n=0; n<dep_amount; n++)
-        {
-            deps[n].copyYourself();
-            changeLibPathsOnFile(deps[n].getInstallPath());
-        }
+
+	for (DependencyMap::iterator i = deps.begin();
+	     i != deps.end(); ++i) {
+		i->copyYourself();
+	}
     }
-    
-    const int fileToFixAmount = Settings::fileToFixAmount();
-    for(int n=0; n<fileToFixAmount; n++)
-    {
-        changeLibPathsOnFile(Settings::fileToFix(n));
+    for (DependencyMap::iterator i = deps.begin();
+	 i != deps.end(); ++i) {
+	    i->copyYourself();
     }
 }

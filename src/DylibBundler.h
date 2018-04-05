@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 void collectDependencies(std::string filename);
 void collectSubDependencies();
+void addOpenDeps(const std::string & path);
 void doneWithDeps_go();
 
 #endif

@@ -109,7 +109,7 @@ int main (int argc, char * const argv[])
         {
             Settings::canOverwriteDir(true);
             Settings::canCreateDir(true);
-            continue;    
+            continue;
         }
         else if(strcmp(argv[i],"-cd")==0 or strcmp(argv[i],"--create-dir")==0)
         {
@@ -140,8 +140,8 @@ int main (int argc, char * const argv[])
     std::cout << "* Collecting dependencies"; fflush(stdout);
     
     const int amount = Settings::fileToFixAmount();
-    for(int n=0; n<amount; n++)
-        collectDependencies(Settings::fileToFix(n));
+    for (int n=0; n<amount; n++)
+        addOpenDeps(Settings::fileToFix(n));
     
     collectSubDependencies();
     doneWithDeps_go();
