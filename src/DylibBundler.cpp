@@ -116,10 +116,13 @@ void collectDependencies(std::string filename)
 	// trim useless info, keep only library name
 	newlibrary = newlibrary.substr(1, lines[n].rfind(" (") - 1);
 
-	if (!Settings::isPrefixBundled(newlibrary.substr(0,newlibrary.rfind("/")))) continue;
 	std::cout << "`" << filename << "'"
 		  << " -> "
-		  << "`" << newlibrary << "'" << std::endl;
+	if (!Settings::isPrefixBundled(newlibrary.substr(0,newlibrary.rfind("/")))) {
+		std::cout << std::endl;
+		continue;
+	}
+	std::cout << "`" << newlibrary << "'" << std::endl;
 	addDependency(newlibrary,filename);
     }
 }
