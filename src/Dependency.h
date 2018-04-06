@@ -63,9 +63,9 @@ public:
 
     void copyYourself() const;
     void fixFileThatDependsOnMe(const std::string & file,
-				const std::string & symlink);
-    void fixFilesThatDependOnMe() {
-	    for (filenamelist::iterator i = dependents.begin();
+				const std::string & symlink) const;
+    void fixFilesThatDependOnMe() const {
+	    for (filenamelist::const_iterator i = dependents.begin();
 		 i!= dependents.end(); ++i) {
 		    fixFileThatDependsOnMe(i->second, i->first);
 	    }

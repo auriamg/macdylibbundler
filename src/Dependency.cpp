@@ -219,7 +219,7 @@ void Dependency::copyYourself() const
 }
 
 void Dependency::fixFileThatDependsOnMe(const std::string & file,
-					const std::string & symlink)
+					const std::string & symlink) const
 {
     // for main lib file
     std::string command = std::string("install_name_tool -change ") +
