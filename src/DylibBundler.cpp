@@ -239,6 +239,6 @@ void doneWithDeps_go()
     std::cout << "* fixing libraries" << std::endl;
     for (DependencyMap::iterator i = deps.begin();
 	 i != deps.end(); ++i) {
-	    i->copyYourself();
+	    i->fixFilesThatDependOnMe();
     }
 }
