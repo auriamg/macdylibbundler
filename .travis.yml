@@ -16,10 +16,6 @@ before_install:
     - mkdir -p config lib/rtmidi/config
     - touch config/config.rpath lib/rtmidi/config/config.rpath
     - eval "${MATRIX_EVAL}"
-    - pwd
-    - ls
-    - if test "$TRAVIS_OS_NAME" = osx ; then  brew update ; fi
-    - if test "$TRAVIS_OS_NAME" = osx ; then brew upgrade boost ; fi
     - if test "$TRAVIS_OS_NAME" = osx ; then rm -rf /usr/local/include/c++ ; fi # fix broken gcc installation
 
 script:
