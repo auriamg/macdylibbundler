@@ -92,11 +92,23 @@ Dependency::Dependency(std::string path,
     char original_file_buffer[PATH_MAX];
     std::string original_file;
 
+    original_file = path;
+
+    size_t pos = original_file.find("@loader_path/");
+    if (pos  != std::string::npos) {
+	    size_t starting_dir_end = dependent.rfind("/");
+	    if (starting_dir_end != std::string::npos) {
+		    original_file.replace(pos,pos+13,
+					  dependent.substr(0,starting_dir_end+1));
+	    } else {
+		    original_file.replace(pos,pos+13,"./");
+	    }
+    }
+
     //TODO: deal with @... paths
-    if (not realpath(rtrim(path).c_str(), original_file_buffer))
+    if (not realpath(rtrim(original_file).c_str(), original_file_buffer))
     {
         std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
-        original_file = path;
     }
     else
     {
