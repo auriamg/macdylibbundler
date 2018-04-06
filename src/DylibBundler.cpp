@@ -117,7 +117,7 @@ void collectDependencies(std::string filename)
 	newlibrary = newlibrary.substr(1, lines[n].rfind(" (") - 1);
 
 	std::cout << "`" << filename << "'"
-		  << " -> "
+		  << " -> ";
 	if (!Settings::isPrefixBundled(newlibrary.substr(0,newlibrary.rfind("/")))) {
 		std::cout << std::endl;
 		continue;
