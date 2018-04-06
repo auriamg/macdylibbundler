@@ -137,12 +137,13 @@ int main (int argc, char * const argv[])
         exit(0);
     }
     
-    std::cout << "* Collecting dependencies"; fflush(stdout);
     
+    std::cout << "* Initializing dependencies" << std::endl;
     const int amount = Settings::fileToFixAmount();
     for (int n=0; n<amount; n++)
         addOpenDeps(Settings::fileToFix(n));
     
+    std::cout << "* Collecting dependencies" << std::endl;
     collectSubDependencies();
     doneWithDeps_go();
     

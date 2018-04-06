@@ -218,6 +218,7 @@ void createDestDir()
 void doneWithDeps_go()
 {
     std::cout << std::endl;
+    std::cout << "* Collecting dependencies" << std::endl;
     for (DependencyMap::iterator i = deps.begin();
 	 i != deps.end(); ++i) {
         i->print();
@@ -227,6 +228,7 @@ void doneWithDeps_go()
     // copy files if requested by user
     if(Settings::bundleLibs())
     {
+	std::cout << "* Bundling libraries" << std::endl;
         createDestDir();
 
 	for (DependencyMap::iterator i = deps.begin();
@@ -234,6 +236,7 @@ void doneWithDeps_go()
 		i->copyYourself();
 	}
     }
+    std::cout << "* fixing libraries" << std::endl;
     for (DependencyMap::iterator i = deps.begin();
 	 i != deps.end(); ++i) {
 	    i->copyYourself();
