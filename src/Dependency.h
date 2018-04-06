@@ -56,7 +56,7 @@ public:
 
     void addSymlink(const std::string & symlink,
 		    const std::string & dependent) {
-	    dependents.emplace(symlink,dependent);
+	    dependents.insert(std::pair<std::string,std::string>(symlink,dependent));
     }
     filenamelist::const_iterator dependentsBegin() { return dependents.begin(); }
     filenamelist::const_iterator dependentsEnd() { return dependents.end(); }
