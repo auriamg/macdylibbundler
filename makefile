@@ -34,4 +34,14 @@ install: dylibbundler
 	cp ./dylibbundler $(DESTDIR)$(PREFIX)/bin/dylibbundler
 	chmod 775 $(DESTDIR)$(PREFIX)/bin/dylibbundler
 
+tests: link_boost_filesystem dylibbundler
+	mkdir -p test_output/test1/Contents/MacOS
+	cp link_boost_filesystem test_output/test1/Contents/MacOS
+	echo | ./dylibbundler -b -x test_output/test1/Contents/MacOS/link_boost_filesystem \
+		-p @executable_path/../libs/ \
+		-cd -od -d test_output/test1/Contents/libs
+
+link_boost_filesystem: tests/link_boost_filesystem.cpp
+	$(CXX) $(CXXFLAGS) -I./src -lboost_filesystem -lboost_system "$<" -o "$@"
+
 .PHONY: all clean install
