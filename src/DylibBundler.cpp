@@ -114,6 +114,8 @@ void collectDependencies(std::string filename)
         if (newlibrary[0] != '\t') continue; // only lines beginning with a tab interest us
         if (newlibrary.find(".framework") != std::string::npos ) continue;
 	// Ignore frameworks, we can not handle them
+        if (newlibrary.find("@rpath") != std::string::npos ) continue;
+	// Ignore @rpath, we can not handle it.
 
 	// trim useless info, keep only library name
 	newlibrary = newlibrary.substr(1, lines[n].rfind(" (") - 1);
@@ -148,6 +150,7 @@ void collectSubDependencies()
             {
                 if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
                 if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
+                if( lines[n].find("@rpath") != std::string::npos ) continue; //Ignore @rpath, we can not handle them
 
 		std::cout <<  (deps[m].getOriginalPath())
 			  << " -> "
