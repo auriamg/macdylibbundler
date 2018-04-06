@@ -12,11 +12,11 @@ matrix:
   include:
     - osx_image: xcode9.2
       env:
-        - MATRIX_EVAL="CC=clang && CXX=clang++ && EXTRA_BREW= && DYLD_LIBRARY_PATH=":/usr/local/opt/wxmac/lib/:/usr/local/Cellar/jack/0.125.0_2/lib:-L/usr/local/lib"
+        - MATRIX_EVAL="CC=clang && CXX=clang++ && EXTRA_BREW= && DYLD_LIBRARY_PATH=":/usr/local/lib"
 
     - osx_image: xcode9.2
       env:
-        - MATRIX_EVAL="CC=gcc && CXX=g++ && EXTRA_BREW=gcc && DYLD_LIBRARY_PATH=":/usr/local/opt/wxmac/lib/:/usr/local/Cellar/jack/0.125.0_2/lib:-L/usr/local/lib"
+        - MATRIX_EVAL="CC=gcc && CXX=g++ && EXTRA_BREW=gcc && DYLD_LIBRARY_PATH=":/usr/local/lib"
 
 
 
