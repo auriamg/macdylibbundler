@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "Settings.h"
 #include <vector>
+#include <iostream>
 
 namespace Settings
 {
