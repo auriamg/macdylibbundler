@@ -112,13 +112,11 @@ void collectDependencies(std::string filename)
         std::cout << "."; fflush(stdout);
 	if (newlibrary.empty()) continue; // ignore empty lines
         if (newlibrary[0] != '\t') continue; // only lines beginning with a tab interest us
-        if (newlibrary.find(".framework") != std::string::npos ) continue;
-	// Ignore frameworks, we can not handle them
-        if (newlibrary.find("@rpath") != std::string::npos ) continue;
-	// Ignore @rpath, we can not handle it.
 
 	// trim useless info, keep only library name
 	newlibrary = newlibrary.substr(1, lines[n].rfind(" (") - 1);
+
+	if (!Settings::isPrefixBundled(newlibrary)) continue;
 	std::cout << filename
 		  << " -> "
 		  << newlibrary << std::endl;
