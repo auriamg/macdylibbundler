@@ -118,11 +118,14 @@ void collectDependencies(std::string filename)
 
 	std::cout << "`" << filename << "'"
 		  << " -> ";
-	if (!Settings::isPrefixBundled(newlibrary.substr(0,newlibrary.rfind("/")))) {
-		std::cout << std::endl;
+	std::cout << "`" << newlibrary << "'?";
+	size_t last_slash = newlibrary.rfind("/");
+	if (last_slash != std::string::npos) last_slash++;
+	if (!Settings::isPrefixBundled(newlibrary.substr(0,last_slash))) {
+		std::cout << "No." << std::endl;
 		continue;
 	}
-	std::cout << "`" << newlibrary << "'" << std::endl;
+	std::cout << "Yes." << std::endl;
 	addDependency(newlibrary,filename);
     }
 }
