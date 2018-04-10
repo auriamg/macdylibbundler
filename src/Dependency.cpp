@@ -192,7 +192,11 @@ std::string Dependency::getInnerPath()
 }
 
 
-void Dependency::addSymlink(std::string s){ symlinks.push_back(s); }
+void Dependency::addSymlink(std::string s)
+{
+    // calling std::find on this vector is not near as slow as an extra invocation of install_name_tool
+    if(std::find(symlinks.begin(), symlinks.end(), s) == symlinks.end()) symlinks.push_back(s);
+}
 
 // Compares the given Dependency with this one. If both refer to the same file,
 // it returns true and merges both entries into one.
@@ -202,7 +206,7 @@ bool Dependency::mergeIfSameAs(Dependency& dep2)
     {
         const int samount = getSymlinkAmount();
         for(int n=0; n<samount; n++) {
-            dep2.addSymlink(getSymlink(n)); // FIXME - there may be duplicate symlinks
+            dep2.addSymlink(getSymlink(n));
         }
         return true;
     }
