@@ -121,7 +121,8 @@ Dependency::Dependency(std::string path,
 
     filename = stripPrefix(original_file);
     prefix = original_file.substr(0, original_file.rfind("/")+1);
-    addSymlink(path,dependent);
+    if (path != dependent)
+	    addSymlink(path,dependent);
 
 
 

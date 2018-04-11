@@ -39,8 +39,9 @@ std::queue <std::string> openDeps;
 
 void addOpenDeps(const std::string & path)
 {
-	openDeps.push(path);
-	deps.insert(Dependency(path,""));
+	Dependency dep(path,path);
+	openDeps.push(dep.getOriginalPath());
+	deps.insert(dep);
 }
 
 #if 0
