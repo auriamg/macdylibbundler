@@ -61,13 +61,13 @@ void initSearchPathes(){
     dyldLibPath = std::getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
     if (dyldLibPath != 0)
     {
-        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":"; 
+        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":";
         searchPathes += dyldLibPath;
     }
     dyldLibPath = std::getenv("DYLD_FALLBACK_LIBRARY_PATH");
     if (dyldLibPath!=0 )
     {
-        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":"; 
+        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":";
         searchPathes += dyldLibPath;
     }
     if (!searchPathes.empty())
@@ -86,41 +86,53 @@ void initSearchPathes(){
 // more stuff will then be necessary to do
 bool missing_prefixes = false;
 
-Dependency::Dependency(std::string path)
+Dependency::Dependency(std::string path,
+		       const std::string & dependent)
 {
     char original_file_buffer[PATH_MAX];
     std::string original_file;
 
-    if (not realpath(rtrim(path).c_str(), original_file_buffer))
+    original_file = path;
+
+    size_t pos = original_file.find("@loader_path/");
+    if (pos  != std::string::npos) {
+	    size_t starting_dir_end = dependent.rfind("/");
+	    if (starting_dir_end != std::string::npos) {
+		    original_file.replace(pos,pos+13,
+					  dependent.substr(0,starting_dir_end+1));
+	    } else {
+		    original_file.replace(pos,pos+13,"./");
+	    }
+    }
+
+    //TODO: deal with @... paths
+    if (not realpath(rtrim(original_file).c_str(), original_file_buffer))
     {
         std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
-        original_file = path;
     }
     else
     {
         original_file = original_file_buffer;
     }
 
-    // check if given path is a symlink
-    if (original_file != rtrim(path))
-    {
-        filename = stripPrefix(original_file);
-        prefix = original_file.substr(0, original_file.rfind("/")+1);
-        addSymlink(path);
-    }
-    else
-    {
-        filename = stripPrefix(path);
-        prefix = path.substr(0, path.rfind("/")+1);
-    }
-    
+    // we iterate over dependencies.
+    // in dependencies we must store the requested file name
+    //
+
+    filename = stripPrefix(original_file);
+    prefix = original_file.substr(0, original_file.rfind("/")+1);
+    if (path != dependent)
+	    addSymlink(path,dependent);
+
+
+
     //check if the lib is in a known location
     if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
         //the pathes contains at least /usr/lib so if it is empty we have not initilazed it
         if( pathes.empty() ) initSearchPathes();
-        
+
         //check if file is contained in one of the pathes
         for( size_t i=0; i<pathes.size(); ++i)
         {
@@ -133,27 +145,29 @@ Dependency::Dependency(std::string path)
             }
         }
     }
-    
+
     //If the location is still unknown, ask the user for search path
     if( !Settings::isPrefixIgnored(prefix)
         && ( prefix.empty() || !fileExists( prefix+filename ) ) )
     {
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
-        
+
         while (true)
         {
-            std::cout << "Please specify now where this library can be found (or write 'quit' to abort): ";  fflush(stdout);
-            
+		// allow to fail in scripts
+	    std::cout << "Please specify now where this library can be found (or write 'quit' to abort): ";
+	    fflush(stdout);
+
             char buffer[128];
             std::cin >> buffer;
             prefix = buffer;
             std::cout << std::endl;
-            
-            if(prefix.compare("quit")==0) exit(1);
-            
+
+            if(std::cin.eof() || std::cin.fail() || prefix.compare("quit")==0) exit(1);
+
             if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
-            
+
             if( !fileExists( prefix+filename ) )
             {
                 std::cerr << (prefix+filename) << " does not exist. Try again" << std::endl;
@@ -167,56 +181,35 @@ Dependency::Dependency(std::string path)
             }
         }
     }
-    
+
     //new_name  = filename.substr(0, filename.find(".")) + ".dylib";
     new_name = filename;
 }
 
-void Dependency::print()
+void Dependency::print() const
 {
     std::cout << std::endl;
-    std::cout << " * " << filename.c_str() << " from " << prefix.c_str() << std::endl;
-    
-    const int symamount = symlinks.size();
-    for(int n=0; n<symamount; n++)
-        std::cout << "     symlink --> " << symlinks[n].c_str() << std::endl;;
+    std::cout << " * " << filename << " from " << prefix << std::endl;
+
+    for (filenamelist::const_iterator i = dependents.begin();
+	 i != dependents.end();
+	 ++i)
+	    std::cout << "\tsymlink " << i->first << " <-- " << i->second << std::endl;
 }
 
-std::string Dependency::getInstallPath()
+std::string Dependency::getInstallPath() const
 {
     return Settings::destFolder() + new_name;
 }
-std::string Dependency::getInnerPath()
+std::string Dependency::getInnerPath() const
 {
     return Settings::inside_lib_path() + new_name;
 }
 
-
-void Dependency::addSymlink(std::string s)
-{
-    // calling std::find on this vector is not near as slow as an extra invocation of install_name_tool
-    if(std::find(symlinks.begin(), symlinks.end(), s) == symlinks.end()) symlinks.push_back(s);
-}
-
-// Compares the given Dependency with this one. If both refer to the same file,
-// it returns true and merges both entries into one.
-bool Dependency::mergeIfSameAs(Dependency& dep2)
-{
-    if(dep2.getOriginalFileName().compare(filename) == 0)
-    {
-        const int samount = getSymlinkAmount();
-        for(int n=0; n<samount; n++) {
-            dep2.addSymlink(getSymlink(n));
-        }
-        return true;
-    }
-    return false;
-}
-
-void Dependency::copyYourself()
+void Dependency::copyYourself() const
 {
     copyFile(getOriginalPath(), getInstallPath());
-    
+
     // Fix the lib's inner name
     std::string command = std::string("install_name_tool -id ") + getInnerPath() + " " + getInstallPath();
     if( systemp( command ) != 0 )
@@ -226,53 +219,71 @@ void Dependency::copyYourself()
     }
 }
 
-void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
+void Dependency::fixFilesThatDependOnMe(DependencyMap& deps) const {
+	for (filenamelist::const_iterator i = dependents.begin();
+	     i!= dependents.end(); ++i) {
+		DependencyMap::iterator j = deps.find(Dependency(i->second,i->first));
+		if (j != deps.end()) {
+			fixFileThatDependsOnMe(*j, i->first);
+		} else {
+			std::cerr  << "\n\nInternal error : lost track of dependencies of file " << i->second << std::endl;
+		}
+	}
+}
+
+void Dependency::fixFileThatDependsOnMe(const Dependency & file,
+					const std::string & symlink) const
 {
     // for main lib file
     std::string command = std::string("install_name_tool -change ") +
-    getOriginalPath() + " " + getInnerPath() + " " + file_to_fix;
-    
+	    symlink + " " + getInnerPath() + " " + file.getInstallPath();
+
     if( systemp( command ) != 0 )
     {
-        std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+	    std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file.getOriginalPath() << std::endl;
         exit(1);
     }
-    
+
+    return;
+
+    // I don't know what is inteded by missing_prefixes
+    // it should be easy enough to call a shell script with correct
+    // search path for missing files.
+#if 0
     // for symlinks
-    const int symamount = symlinks.size();
-    for(int n=0; n<symamount; n++)
-    {
+    for(filenamelist::iterator i = dependents.begin();
+	i != dependents.end(); ++i) {
         std::string command = std::string("install_name_tool -change ") +
-        symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
-        
+        *i + " " + getInnerPath() + " " + file_to_fix;
+
         if( systemp( command ) != 0 )
         {
             std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
             exit(1);
         }
     }
-    
-    
+
+
     // FIXME - hackish
     if(missing_prefixes)
     {
         // for main lib file
         std::string command = std::string("install_name_tool -change ") +
         filename + " " + getInnerPath() + " " + file_to_fix;
-        
+
         if( systemp( command ) != 0 )
         {
             std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
             exit(1);
         }
-        
+
         // for symlinks
         const int symamount = symlinks.size();
         for(int n=0; n<symamount; n++)
         {
             std::string command = std::string("install_name_tool -change ") +
             symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
-            
+
             if( systemp( command ) != 0 )
             {
                 std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
@@ -280,4 +291,5 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
             }
         }//next
     }// end if(missing_prefixes)
+#endif
 }

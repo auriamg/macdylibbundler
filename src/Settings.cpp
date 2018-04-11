@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "Settings.h"
 #include <vector>
+#include <iostream>
 
 namespace Settings
 {
@@ -89,8 +90,11 @@ bool isPrefixIgnored(std::string prefix)
 
 bool isPrefixBundled(std::string prefix)
 {
+    std::clog << "checking library prefix `" << prefix << "'." << std::endl;
+    // We don't handle frameworks and @rpath so don't touch them
     if(prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
+    if(prefix.find("@rpath") != std::string::npos) return false;
     if(prefix.compare("/usr/lib/") == 0) return false;
     if(isPrefixIgnored(prefix)) return false;
     
