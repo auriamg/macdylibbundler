@@ -1,0 +1,37 @@
+git:
+  depth: 1
+branches:
+  except:
+    - /(?i:appveyor)/
+language: c++
+compiler:
+  - gcc
+  - clang
+os: osx
+osx_image: xcode9.2
+env:
+  - MATRIX_EVAL="DYLD_LIBRARY_PATH=":/usr/local/lib"
+
+before_install:
+    - mkdir -p config lib/rtmidi/config
+    - touch config/config.rpath lib/rtmidi/config/config.rpath
+    - eval "${MATRIX_EVAL}"
+    - if test "$TRAVIS_OS_NAME" = osx ; then rm -rf /usr/local/include/c++ ; fi # fix broken gcc installation
+
+script:
+    - if test "$TRAVIS_OS_NAME" = osx ; then echo "DYLD_LIBRARY_PATH = $DYLD_LIBRARY_PATH" ; fi ;
+    - if test "$TRAVIS_OS_NAME" = osx ; then echo "DYLD_FALLBACK_FRAMEWORK_PATH = $DYLD_FALLBACK_FRAMEWORK_PATH" ; fi ;
+    - if test "$TRAVIS_OS_NAME" = osx ; then make install &&  make tests ; fi ;
+    - mkdir -p public/$CC
+    - if test "$TRAVIS_OS_NAME" = osx ; then cp dylibbundler public/$CC ; fi ;
+
+deploy:
+	- provider: pages
+	  skip_cleanup: true
+	  local-dir: public
+	  branch:	gh-pages
+	  keep-history: true
+	  github-token: $GITHUB_TOKEN
+	  verbose: true
+	  on:
+		branch: master
