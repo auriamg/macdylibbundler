@@ -26,12 +26,12 @@ script:
     - if test "$TRAVIS_OS_NAME" = osx ; then cp dylibbundler public/$CC ; fi ;
 
 deploy:
-	- provider: pages
-	  skip_cleanup: true
-	  local-dir: public
-	  branch:	gh-pages
-	  keep-history: true
-	  github-token: $GITHUB_TOKEN
-	  verbose: true
-	  on:
-		branch: master
+    - provider: pages
+      skip_cleanup: true
+      local-dir: public
+      branch:    gh-pages
+      keep-history: true
+      github-token: $GITHUB_TOKEN
+      verbose: true
+      on:
+          branch:master
