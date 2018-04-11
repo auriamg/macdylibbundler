@@ -34,27 +34,56 @@ class Dependency;
 typedef std::set<Dependency> DependencyMap;
 
 
-class Dependency
+class DependencyKey {
+public:
+	DependencyKey() {}
+	DependencyKey(const std::string & f) {
+		size_t pos = f.find_last_of("/");
+		if (pos != std::string::npos) {
+			prefix = f.substr(0,pos+1);
+			filename = f.substr(pos+1,std::string::npos);
+		}
+	}
+	DependencyKey(const std::string & p,
+		      const std::string & f): prefix(p),
+					      filename(f) {}
+	DependencyKey(const DependencyKey & o):prefix(o.prefix),
+					  filename(o.filename)
+	{}
+	DependencyKey(const DependencyKey && o):prefix(o.prefix),
+					  filename(o.filename)
+	{}
+
+	std::string getOriginalFileName() const{ return filename; }
+	std::string getOriginalPath() const{ return prefix+filename; }
+	std::string getPrefix() const{ return prefix; }
+
+	bool operator < (const DependencyKey & o) const {
+		return (filename < o.filename || (filename == o.filename  && prefix < o.prefix));
+	}
+protected:
+	std::string prefix;
+	std::string filename;
+};
+
+class Dependency: public DependencyKey
 {
  public:
     typedef std::multimap<std::string,std::string> filenamelist;
  protected:
     // origin
-    std::string filename;
-    std::string prefix;
     filenamelist dependents;
 
     // installation
     std::string new_name;
 public:
+    Dependency(const DependencyKey & o):DependencyKey(o) {}
+    Dependency(const DependencyKey && o):DependencyKey(o) {}
+
     Dependency(std::string path,
 	       const std::string & dependent);
 
     void print() const;
-
-    std::string getOriginalFileName() const{ return filename; }
-    std::string getOriginalPath() const{ return prefix+filename; }
-    std::string getPrefix() const{ return prefix; }
 
     std::string getInstallPath() const;
     std::string getInnerPath() const;
@@ -75,9 +104,7 @@ public:
 			  dep2.dependents.end());
     }
 
-    bool operator < (const Dependency & o) const {
-	    return (filename < o.filename || (filename == o.filename  && prefix < o.prefix));
-    }
+    using DependencyKey::operator<;
 };
 
 

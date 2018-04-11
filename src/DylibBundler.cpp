@@ -90,7 +90,7 @@ void collectDependencies(std::string filename, std::vector<std::string>& lines)
 // copying the string is ok here, since the original might not be stable.
 void collectDependencies(std::string filename)
 {
-    DependencyMap::iterator d = deps.find(Dependency(filename,""));
+    DependencyMap::iterator d = deps.find(DependencyKey(filename));
     if (d == deps.end()) {
 	    std::cerr << "Internal error: Dependency " << filename << " is not initialized" << std::endl;
 	    exit(1);
