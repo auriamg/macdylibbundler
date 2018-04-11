@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "Dependency.h"
 
 
-typedef std::set<Dependency> DependencyMap;
 DependencyMap deps;
 std::queue <std::string> openDeps;
 
@@ -239,6 +238,6 @@ void doneWithDeps_go()
     std::cout << "* fixing libraries" << std::endl;
     for (DependencyMap::iterator i = deps.begin();
 	 i != deps.end(); ++i) {
-	    i->fixFilesThatDependOnMe();
+	    i->fixFilesThatDependOnMe(deps);
     }
 }

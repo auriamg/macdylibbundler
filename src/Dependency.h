@@ -1,4 +1,4 @@
-/*
+/*  -*- C++ -*-
 The MIT License (MIT)
 
 Copyright (c) 2014 Marianne Gagnon
@@ -28,6 +28,11 @@ THE SOFTWARE.
 
 #include <string>
 #include <map>
+#include <set>
+
+class Dependency;
+typedef std::set<Dependency> DependencyMap;
+
 
 class Dependency
 {
@@ -62,15 +67,9 @@ public:
     filenamelist::const_iterator dependentsEnd() { return dependents.end(); }
 
     void copyYourself() const;
-    void fixFileThatDependsOnMe(const std::string & file,
+    void fixFileThatDependsOnMe(const Dependency & file,
 				const std::string & symlink) const;
-    void fixFilesThatDependOnMe() const {
-	    for (filenamelist::const_iterator i = dependents.begin();
-		 i!= dependents.end(); ++i) {
-		    fixFileThatDependsOnMe(i->second, i->first);
-	    }
-    }
-
+    void fixFilesThatDependOnMe(DependencyMap& deps) const;
     void merge(const Dependency& dep2) {
 	dependents.insert(dep2.dependents.begin(),
 			  dep2.dependents.end());

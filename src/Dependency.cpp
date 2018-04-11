@@ -218,16 +218,28 @@ void Dependency::copyYourself() const
     }
 }
 
-void Dependency::fixFileThatDependsOnMe(const std::string & file,
+void Dependency::fixFilesThatDependOnMe(DependencyMap& deps) const {
+	for (filenamelist::const_iterator i = dependents.begin();
+	     i!= dependents.end(); ++i) {
+		DependencyMap::iterator j = deps.find(Dependency(i->second,i->first));
+		if (j != deps.end()) {
+			fixFileThatDependsOnMe(*j, i->first);
+		} else {
+			std::cerr  << "\n\nInternal error : lost track of dependencies of file " << i->second << std::endl;
+		}
+	}
+}
+
+void Dependency::fixFileThatDependsOnMe(const Dependency & file,
 					const std::string & symlink) const
 {
     // for main lib file
     std::string command = std::string("install_name_tool -change ") +
-	    symlink + " " + getInnerPath() + " " + file;
+	    symlink + " " + getInnerPath() + " " + file.getInstallPath();
 
     if( systemp( command ) != 0 )
     {
-        std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file << std::endl;
+	    std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file.getOriginalPath() << std::endl;
         exit(1);
     }
 
