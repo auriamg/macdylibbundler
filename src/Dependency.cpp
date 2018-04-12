@@ -48,36 +48,36 @@ std::string& rtrim(std::string &s) {
     return s;
 }
 
-//the pathes to search for dylibs, store it globally to parse the environment variables only once
-std::vector<std::string> pathes;
+//the paths to search for dylibs, store it globally to parse the environment variables only once
+std::vector<std::string> paths;
 
-//initialize the dylib search pathes
-void initSearchPathes(){
-    //Check the same pathes the system would search for dylibs
-    std::string searchPathes;
+//initialize the dylib search paths
+void initSearchPaths(){
+    //Check the same paths the system would search for dylibs
+    std::string searchPaths;
     char *dyldLibPath = std::getenv("DYLD_LIBRARY_PATH");
     if( dyldLibPath!=0 )
-        searchPathes = dyldLibPath;
+        searchPaths = dyldLibPath;
     dyldLibPath = std::getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
     if (dyldLibPath != 0)
     {
-        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":"; 
-        searchPathes += dyldLibPath;
+        if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
+        searchPaths += dyldLibPath;
     }
     dyldLibPath = std::getenv("DYLD_FALLBACK_LIBRARY_PATH");
     if (dyldLibPath!=0 )
     {
-        if (!searchPathes.empty() && searchPathes[ searchPathes.size()-1 ] != ':') searchPathes += ":"; 
-        searchPathes += dyldLibPath;
+        if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
+        searchPaths += dyldLibPath;
     }
-    if (!searchPathes.empty())
+    if (!searchPaths.empty())
     {
-        std::stringstream ss(searchPathes);
+        std::stringstream ss(searchPaths);
         std::string item;
         while(std::getline(ss, item, ':'))
         {
             if (item[ item.size()-1 ] != '/') item += "/";
-            pathes.push_back(item);
+            paths.push_back(item);
         }
     }
 }
@@ -118,16 +118,16 @@ Dependency::Dependency(std::string path)
     if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
-        //the pathes contains at least /usr/lib so if it is empty we have not initilazed it
-        if( pathes.empty() ) initSearchPathes();
+        //the paths contains at least /usr/lib so if it is empty we have not initialized it
+        if( paths.empty() ) initSearchPaths();
         
-        //check if file is contained in one of the pathes
-        for( size_t i=0; i<pathes.size(); ++i)
+        //check if file is contained in one of the paths
+        for( size_t i=0; i<paths.size(); ++i)
         {
-            if (fileExists( pathes[i]+filename ))
+            if (fileExists( paths[i]+filename ))
             {
-                std::cout << "FOUND " << filename << " in " << pathes[i] << std::endl;
-                prefix = pathes[i];
+                std::cout << "FOUND " << filename << " in " << paths[i] << std::endl;
+                prefix = paths[i];
                 missing_prefixes = true; //the prefix was missing
                 break;
             }
