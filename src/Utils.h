@@ -41,5 +41,6 @@ std::string system_get_output(std::string cmd);
 
 // like 'system', runs a command on the system shell, but also prints the command to stdout.
 int systemp(std::string& cmd);
+std::string getUserInputDirForFile(const std::string& filename);
 
 #endif

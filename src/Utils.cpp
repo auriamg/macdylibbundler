@@ -177,3 +177,30 @@ int systemp(std::string& cmd)
     std::cout << "    " << cmd.c_str() << std::endl;
     return system(cmd.c_str());
 }
+
+std::string getUserInputDirForFile(const std::string& filename)
+{
+    while (true)
+    {
+        std::cout << "Please specify now the directory where this library can be found (or write 'quit' to abort): ";  fflush(stdout);
+
+        std::string prefix;
+        std::cin >> prefix;
+        std::cout << std::endl;
+
+        if(prefix.compare("quit")==0) exit(1);
+
+        if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
+
+        if( !fileExists( prefix+filename ) )
+        {
+            std::cerr << (prefix+filename) << " does not exist. Try again" << std::endl;
+            continue;
+        }
+        else
+        {
+            std::cerr << (prefix+filename) << " was found. /!\\MANUALLY CHECK THE EXECUTABLE WITH 'otool -L', DYLIBBUNDLDER MAY NOT HANDLE CORRECTLY THIS UNSTANDARD/ILL-FORMED DEPENDENCY" << std::endl;
+            return prefix;
+        }
+    }
+}

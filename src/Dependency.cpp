@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <sys/param.h>
 #include "Utils.h"
 #include "Settings.h"
+#include "DylibBundler.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -91,7 +92,11 @@ Dependency::Dependency(std::string path)
     char original_file_buffer[PATH_MAX];
     std::string original_file;
 
-    if (not realpath(rtrim(path).c_str(), original_file_buffer))
+    if (isRpath(path))
+    {
+        original_file = searchFilenameInRpaths(path);
+    }
+    else if (not realpath(rtrim(path).c_str(), original_file_buffer))
     {
         std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
         original_file = path;
@@ -141,31 +146,7 @@ Dependency::Dependency(std::string path)
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
         
-        while (true)
-        {
-            std::cout << "Please specify now where this library can be found (or write 'quit' to abort): ";  fflush(stdout);
-            
-            char buffer[128];
-            std::cin >> buffer;
-            prefix = buffer;
-            std::cout << std::endl;
-            
-            if(prefix.compare("quit")==0) exit(1);
-            
-            if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
-            
-            if( !fileExists( prefix+filename ) )
-            {
-                std::cerr << (prefix+filename) << " does not exist. Try again" << std::endl;
-                continue;
-            }
-            else
-            {
-                pathes.push_back( prefix );
-                std::cerr << (prefix+filename) << " was found. /!\\MANUALLY CHECK THE EXECUTABLE WITH 'otool -L', DYLIBBUNDLDER MAY NOT HANDLE CORRECTLY THIS UNSTANDARD/ILL-FORMED DEPENDENCY" << std::endl;
-                break;
-            }
-        }
+        paths.push_back(getUserInputDirForFile(filename));
     }
     
     //new_name  = filename.substr(0, filename.find(".")) + ".dylib";
