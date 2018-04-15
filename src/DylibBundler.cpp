@@ -26,12 +26,15 @@ THE SOFTWARE.
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <set>
 #include "Utils.h"
 #include "Settings.h"
 #include "Dependency.h"
 
 
 std::vector<Dependency> deps;
+std::set<std::string> rpaths;
+std::set<std::string> filenames_rpaths_already_collected;
 
 void changeLibPathsOnFile(std::string file_to_fix)
 {
@@ -42,6 +45,88 @@ void changeLibPathsOnFile(std::string file_to_fix)
     {
         deps[n].fixFileThatDependsOnMe(file_to_fix);
     }
+}
+
+void collectRpaths(const std::string& filename)
+{
+    if (!fileExists(filename))
+    {
+        std::cerr << "\n/!\\ WARNING : can't collect rpaths for inexistent file '" << filename << "'\n";
+        return;
+    }
+
+    std::string cmd = "otool -l " + filename;
+    std::string output = system_get_output(cmd);
+
+    std::vector<std::string> lc_lines;
+    tokenize(output, "\n", &lc_lines);
+
+    size_t pos = 0;
+    bool read_rpath = false;
+    while (pos < lc_lines.size())
+    {
+        std::string line = lc_lines[pos];
+        pos++;
+
+        if (read_rpath)
+        {
+            size_t start_pos = line.find("path ");
+            size_t end_pos = line.find(" (");
+            if (start_pos == std::string::npos || end_pos == std::string::npos)
+            {
+                std::cerr << "\n/!\\ WARNING: Unexpected LC_RPATH format\n";
+                continue;
+            }
+            start_pos += 5;
+            std::string rpath = line.substr(start_pos, end_pos - start_pos);
+            rpaths.insert(rpath);
+            read_rpath = false;
+            continue;
+        }
+
+        if (line.find("LC_RPATH") != std::string::npos)
+        {
+            read_rpath = true;
+            pos++;
+        }
+    }
+}
+
+void collectRpathsForFilename(const std::string& filename)
+{
+    if (filenames_rpaths_already_collected.find(filename) == filenames_rpaths_already_collected.end())
+    {
+        collectRpaths(filename);
+        filenames_rpaths_already_collected.insert(filename);
+    }
+}
+
+std::string searchFilenameInRpaths(const std::string& rpath_file)
+{
+    char buffer[PATH_MAX];
+    std::string fullpath;
+    std::string suffix = rpath_file.substr(7, rpath_file.size()-6);
+
+    for (std::set<std::string>::iterator it = rpaths.begin(); it != rpaths.end(); ++it)
+    {
+        std::string path = *it + "/" + suffix;
+        if (realpath(path.c_str(), buffer))
+        {
+            fullpath = buffer;
+            break;
+        }
+    }
+
+    if (fullpath.empty())
+    {
+        std::cerr << "\n/!\\ WARNING : can't get path for '" << rpath_file << "'\n";
+        fullpath = getUserInputDirForFile(suffix) + suffix;
+        if (realpath(fullpath.c_str(), buffer)) {
+            fullpath = buffer;
+        }
+    }
+
+    return fullpath;
 }
 
 void addDependency(std::string path)
@@ -93,10 +178,15 @@ void collectDependencies(std::string filename)
         std::cout << "."; fflush(stdout);
         if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
         if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
-        
-        addDependency( // trim useless info, keep only library name
-                       lines[n].substr(1, lines[n].rfind(" (") - 1)
-                       );
+
+        // trim useless info, keep only library name
+        std::string dep_path = lines[n].substr(1, lines[n].rfind(" (") - 1);
+        if (isRpath(dep_path))
+        {
+            collectRpathsForFilename(filename);
+        }
+
+        addDependency(dep_path);
     }
 }
 void collectSubDependencies()
@@ -112,7 +202,13 @@ void collectSubDependencies()
         {
             std::cout << "."; fflush(stdout);
             std::vector<std::string> lines;
-            collectDependencies(deps[n].getOriginalPath(), lines);
+            std::string original_path = deps[n].getOriginalPath();
+            if (isRpath(original_path))
+            {
+                original_path = searchFilenameInRpaths(original_path);
+            }
+            collectRpathsForFilename(original_path);
+            collectDependencies(original_path, lines);
             
             const int line_amount = lines.size();
             for(int n=0; n<line_amount; n++)
@@ -120,9 +216,14 @@ void collectSubDependencies()
                 if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
                 if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
                 
-                addDependency( // trim useless info, keep only library name
-                               lines[n].substr(1, lines[n].rfind(" (") - 1) 
-                               );
+                // trim useless info, keep only library name
+                std::string dep_path = lines[n].substr(1, lines[n].rfind(" (") - 1);
+                if (isRpath(dep_path))
+                {
+                    collectRpathsForFilename(searchFilenameInRpaths(dep_path));
+                }
+
+                addDependency(dep_path);
             }//next
         }//next
         
