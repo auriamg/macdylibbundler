@@ -1,0 +1,11 @@
+language: cpp
+os: osx
+compiler: clang
+osx_image: xcode9.3
+
+script:
+  - make -j $(sysctl -n hw.ncpu)
+
+after_success:
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - bash upload.sh dylibbundler

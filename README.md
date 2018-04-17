@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/auriamg/macdylibbundler.svg?branch=master)](https://travis-ci.org/auriamg/macdylibbundler)
+
 mac dylib bundler
 ================
 

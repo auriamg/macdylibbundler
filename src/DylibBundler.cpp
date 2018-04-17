@@ -47,6 +47,11 @@ void changeLibPathsOnFile(std::string file_to_fix)
     }
 }
 
+bool isRpath(const std::string& path)
+{
+    return path.find("@rpath") == 0;
+}
+
 void collectRpaths(const std::string& filename)
 {
     if (!fileExists(filename))
