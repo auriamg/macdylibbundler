@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <cstdio>
 #include <cstdlib>
 #include <set>
+#include <map>
 #include "Utils.h"
 #include "Settings.h"
 #include "Dependency.h"
@@ -34,7 +35,7 @@ THE SOFTWARE.
 
 std::vector<Dependency> deps;
 std::set<std::string> rpaths;
-std::set<std::string> filenames_rpaths_already_collected;
+std::map<std::string, std::vector<std::string> > rpaths_per_file;
 
 void changeLibPathsOnFile(std::string file_to_fix)
 {
@@ -85,6 +86,7 @@ void collectRpaths(const std::string& filename)
             start_pos += 5;
             std::string rpath = line.substr(start_pos, end_pos - start_pos);
             rpaths.insert(rpath);
+            rpaths_per_file[filename].push_back(rpath);
             read_rpath = false;
             continue;
         }
@@ -99,10 +101,9 @@ void collectRpaths(const std::string& filename)
 
 void collectRpathsForFilename(const std::string& filename)
 {
-    if (filenames_rpaths_already_collected.find(filename) == filenames_rpaths_already_collected.end())
+    if (rpaths_per_file.find(filename) == rpaths_per_file.end())
     {
         collectRpaths(filename);
-        filenames_rpaths_already_collected.insert(filename);
     }
 }
 
@@ -132,6 +133,27 @@ std::string searchFilenameInRpaths(const std::string& rpath_file)
     }
 
     return fullpath;
+}
+
+void fixRpathsOnFile(const std::string& original_file, const std::string& file_to_fix)
+{
+    std::vector<std::string> rpaths_to_fix;
+    std::map<std::string, std::vector<std::string> >::iterator found = rpaths_per_file.find(original_file);
+    if (found != rpaths_per_file.end())
+    {
+        rpaths_to_fix = found->second;
+    }
+
+    for (size_t i=0; i < rpaths_to_fix.size(); ++i)
+    {
+        std::string command = std::string("install_name_tool -rpath ") +
+                rpaths_to_fix[i] + " " + Settings::inside_lib_path() + " " + file_to_fix;
+        if ( systemp(command) != 0)
+        {
+            std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+            exit(1);
+        }
+    }
 }
 
 void addDependency(std::string path)
@@ -298,6 +320,7 @@ void doneWithDeps_go()
         {
             deps[n].copyYourself();
             changeLibPathsOnFile(deps[n].getInstallPath());
+            fixRpathsOnFile(deps[n].getOriginalPath(), deps[n].getInstallPath());
         }
     }
     
@@ -305,5 +328,6 @@ void doneWithDeps_go()
     for(int n=0; n<fileToFixAmount; n++)
     {
         changeLibPathsOnFile(Settings::fileToFix(n));
+        fixRpathsOnFile(Settings::fileToFix(n), Settings::fileToFix(n));
     }
 }

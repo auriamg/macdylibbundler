@@ -223,7 +223,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
     const int symamount = symlinks.size();
     for(int n=0; n<symamount; n++)
     {
-        std::string command = std::string("install_name_tool -change ") +
+        command = std::string("install_name_tool -change ") +
         symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
         
         if( systemp( command ) != 0 )
@@ -238,7 +238,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
     if(missing_prefixes)
     {
         // for main lib file
-        std::string command = std::string("install_name_tool -change ") +
+        command = std::string("install_name_tool -change ") +
         filename + " " + getInnerPath() + " " + file_to_fix;
         
         if( systemp( command ) != 0 )
@@ -251,7 +251,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
         const int symamount = symlinks.size();
         for(int n=0; n<symamount; n++)
         {
-            std::string command = std::string("install_name_tool -change ") +
+            command = std::string("install_name_tool -change ") +
             symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
             
             if( systemp( command ) != 0 )
