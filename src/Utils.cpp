@@ -93,17 +93,6 @@ bool fileExists( std::string filename )
     }
 }
 
-void fixLibDependency(string old_lib_path, string new_lib_name, string target_file_name)
-{
-
-    string command = string("install_name_tool -change ") + old_lib_path + string(" ") + Settings::inside_lib_path() + new_lib_name + string(" ") + target_file_name;
-    if( systemp( command ) != 0 )
-    {
-        cerr << "\n\nError : An error occured while trying to fix depency of " << old_lib_path << " in " << target_file_name << endl;
-        exit(1);
-    }
-}
-
 void copyFile(string from, string to)
 {
     bool override = Settings::canOverwriteFiles();
