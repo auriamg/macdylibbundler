@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <set>
 #include <map>
+#include <linux/limits.h>
 #include "Utils.h"
 #include "Settings.h"
 #include "Dependency.h"
