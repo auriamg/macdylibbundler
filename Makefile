@@ -17,6 +17,7 @@ clean:
 	rm -f ./dylibbundler
 
 install: dylibbundler
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp ./dylibbundler $(DESTDIR)$(PREFIX)/bin/dylibbundler
 	chmod 775 $(DESTDIR)$(PREFIX)/bin/dylibbundler
 
