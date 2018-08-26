@@ -104,12 +104,12 @@ void copyFile(string from, string to)
             exit(1);
         }
     }
-    
+
     string override_permission = string(override ? "-f " : "-n ");
         
     // copy file to local directory
     string command = string("cp ") + override_permission + from + string(" ") + to;
-    if( systemp( command ) != 0 )
+    if( from != to && systemp( command ) != 0 )
     {
         cerr << "\n\nError : An error occured while trying to copy file " << from << " to " << to << endl;
         exit(1);
