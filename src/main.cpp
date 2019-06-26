@@ -41,7 +41,7 @@ THE SOFTWARE.
  
  */
 
-const std::string VERSION = "git";
+const std::string VERSION = "0.4.5";
 
 
 // FIXME - no memory management is done at all (anyway the program closes immediately so who cares?)
