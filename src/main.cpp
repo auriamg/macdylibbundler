@@ -121,6 +121,12 @@ int main (int argc, char * const argv[])
             showHelp();
             exit(0);    
         }
+        if(strcmp(argv[i],"-s")==0 or strcmp(argv[i],"--search-path")==0)
+        {
+            i++;
+            Settings::addSearchPath(argv[i]);
+            continue;
+        }
         else if(i>0)
         {
             // if we meet an unknown flag, abort
