@@ -169,6 +169,20 @@ int systemp(std::string& cmd)
 
 std::string getUserInputDirForFile(const std::string& filename)
 {
+    const int searchPathAmount = Settings::searchPathAmount();
+    for(int n=0; n<searchPathAmount; n++)
+    {
+        auto searchPath = Settings::searchPath(n);
+        if( !searchPath.empty() && searchPath[ searchPath.size()-1 ] != '/' ) searchPath += "/";
+
+        if( !fileExists( searchPath+filename ) ) {
+            continue;
+        } else {
+            std::cerr << (searchPath+filename) << " was found. /!\\MANUALLY CHECK THE EXECUTABLE WITH 'otool -L', DYLIBBUNDLDER MAY NOT HANDLE CORRECTLY THIS UNSTANDARD/ILL-FORMED DEPENDENCY" << std::endl;
+            return searchPath;
+        }
+    }
+
     while (true)
     {
         std::cout << "Please specify now the directory where this library can be found (or write 'quit' to abort): ";  fflush(stdout);

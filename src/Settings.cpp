@@ -97,4 +97,9 @@ bool isPrefixBundled(std::string prefix)
     return true;
 }
 
+std::vector<std::string> searchPaths;
+void addSearchPath(std::string path){ searchPaths.push_back(path); }
+int searchPathAmount(){ return searchPaths.size(); }
+std::string searchPath(const int n){ return searchPaths[n]; }
+
 }
