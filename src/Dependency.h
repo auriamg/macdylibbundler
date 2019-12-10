@@ -57,7 +57,7 @@ public:
     void copyYourself();
     void fixFileThatDependsOnMe(std::string file);
     
-    // comapres the given Dependency with this one. If both refer to the same file,
+    // Compares the given dependency with this one. If both refer to the same file,
     // it returns true and merges both entries into one.
     bool mergeIfSameAs(Dependency& dep2);
 };

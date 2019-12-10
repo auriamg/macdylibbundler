@@ -60,7 +60,7 @@ void collectRpaths(const std::string& filename)
 {
     if (!fileExists(filename))
     {
-        std::cerr << "\n/!\\ WARNING : can't collect rpaths for inexistent file '" << filename << "'\n";
+        std::cerr << "\n/!\\ WARNING : can't collect rpaths for nonexistent file '" << filename << "'\n";
         return;
     }
 
@@ -153,7 +153,7 @@ void fixRpathsOnFile(const std::string& original_file, const std::string& file_t
                 rpaths_to_fix[i] + " " + Settings::inside_lib_path() + " " + file_to_fix;
         if ( systemp(command) != 0)
         {
-            std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+            std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
             exit(1);
         }
     }
@@ -244,7 +244,7 @@ void collectSubDependencies()
             for(int n=0; n<line_amount; n++)
             {
                 if(lines[n][0] != '\t') continue; // only lines beginning with a tab interest us
-                if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we can not handle them
+                if( lines[n].find(".framework") != std::string::npos ) continue; //Ignore frameworks, we cannot handle them
                 
                 // trim useless info, keep only library name
                 std::string dep_path = lines[n].substr(1, lines[n].rfind(" (") - 1);
@@ -275,7 +275,7 @@ void createDestDir()
         std::string command = std::string("rm -r ") + dest_folder;
         if( systemp( command ) != 0)
         {
-            std::cerr << "\n\nError : An error occured while attempting to override dest folder." << std::endl;
+            std::cerr << "\n\nError : An error occured while attempting to overwrite dest folder." << std::endl;
             exit(1);
         }
         dest_exists = false;
