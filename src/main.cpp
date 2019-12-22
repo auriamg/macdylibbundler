@@ -58,6 +58,7 @@ void showHelp()
     std::cout << "-b, --bundle-deps" << std::endl;
     std::cout << "-d, --dest-dir <directory to send bundled libraries (relative to cwd)>" << std::endl;
     std::cout << "-p, --install-path <'inner' path of bundled libraries (usually relative to executable, by default '@executable_path/../libs/')>" << std::endl;
+    std::cout << "-s, --search-path <directory to add to list of locations searched>" << std::endl;
     std::cout << "-of, --overwrite-files (allow overwriting files in output directory)" << std::endl;
     std::cout << "-od, --overwrite-dir (totally overwrite output directory if it already exists. implies --create-dir)" << std::endl;
     std::cout << "-cd, --create-dir (creates output directory if necessary)" << std::endl;
