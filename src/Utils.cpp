@@ -100,7 +100,7 @@ void copyFile(string from, string to)
     {
         if(fileExists( to ))
         {
-            cerr << "\n\nError : File " << to.c_str() << " already exists. Remove it or enable overriding." << endl;
+            cerr << "\n\nError : File " << to.c_str() << " already exists. Remove it or enable overwriting." << endl;
             exit(1);
         }
     }
@@ -178,14 +178,14 @@ std::string getUserInputDirForFile(const std::string& filename)
         if( !fileExists( searchPath+filename ) ) {
             continue;
         } else {
-            std::cerr << (searchPath+filename) << " was found. /!\\MANUALLY CHECK THE EXECUTABLE WITH 'otool -L', DYLIBBUNDLDER MAY NOT HANDLE CORRECTLY THIS UNSTANDARD/ILL-FORMED DEPENDENCY" << std::endl;
+            std::cerr << (searchPath+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
             return searchPath;
         }
     }
 
     while (true)
     {
-        std::cout << "Please specify now the directory where this library can be found (or write 'quit' to abort): ";  fflush(stdout);
+        std::cout << "Please specify the directory where this library is located (or enter 'quit' to abort): ";  fflush(stdout);
 
         std::string prefix;
         std::cin >> prefix;
@@ -202,7 +202,7 @@ std::string getUserInputDirForFile(const std::string& filename)
         }
         else
         {
-            std::cerr << (prefix+filename) << " was found. /!\\MANUALLY CHECK THE EXECUTABLE WITH 'otool -L', DYLIBBUNDLDER MAY NOT HANDLE CORRECTLY THIS UNSTANDARD/ILL-FORMED DEPENDENCY" << std::endl;
+            std::cerr << (prefix+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
             return prefix;
         }
     }

@@ -215,7 +215,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
     
     if( systemp( command ) != 0 )
     {
-        std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+        std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
         exit(1);
     }
     
@@ -228,7 +228,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
         
         if( systemp( command ) != 0 )
         {
-            std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+            std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
             exit(1);
         }
     }
@@ -243,7 +243,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
         
         if( systemp( command ) != 0 )
         {
-            std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+            std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
             exit(1);
         }
         
@@ -256,7 +256,7 @@ void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
             
             if( systemp( command ) != 0 )
             {
-                std::cerr << "\n\nError : An error occured while trying to fix depencies of " << file_to_fix << std::endl;
+                std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
                 exit(1);
             }
         }//next
