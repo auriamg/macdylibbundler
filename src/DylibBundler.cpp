@@ -37,17 +37,24 @@ THE SOFTWARE.
 
 
 std::vector<Dependency> deps;
+std::map<std::string, std::vector<Dependency> > deps_per_file;
+std::map<std::string, bool> deps_collected;
 std::set<std::string> rpaths;
 std::map<std::string, std::vector<std::string> > rpaths_per_file;
 
 void changeLibPathsOnFile(std::string file_to_fix)
 {
+    if (deps_collected.find(file_to_fix) == deps_collected.end())
+    {
+        collectDependencies(file_to_fix);
+    }
     std::cout << "\n* Fixing dependencies on " << file_to_fix.c_str() << std::endl;
     
-    const int dep_amount = deps.size();
+    std::vector<Dependency> deps_in_file = deps_per_file[file_to_fix];
+    const int dep_amount = deps_in_file.size();
     for(int n=0; n<dep_amount; n++)
     {
-        deps[n].fixFileThatDependsOnMe(file_to_fix);
+        deps_in_file[n].fixFileThatDependsOnMe(file_to_fix);
     }
 }
 
@@ -159,20 +166,31 @@ void fixRpathsOnFile(const std::string& original_file, const std::string& file_t
     }
 }
 
-void addDependency(std::string path)
+void addDependency(std::string path, std::string filename)
 {
     Dependency dep(path);
     
     // we need to check if this library was already added to avoid duplicates
+    bool in_deps = false;
     const int dep_amount = deps.size();
     for(int n=0; n<dep_amount; n++)
     {
-        if(dep.mergeIfSameAs(deps[n])) return;
+        if(dep.mergeIfSameAs(deps[n])) in_deps = true;
     }
     
+    // check if this library was already added to |deps_per_file[filename]| to avoid duplicates
+    std::vector<Dependency> deps_in_file = deps_per_file[filename];
+    bool in_deps_per_file = false;
+    const int deps_in_file_amount = deps_in_file.size();
+    for(int n=0; n<deps_in_file_amount; n++)
+    {
+        if(dep.mergeIfSameAs(deps_in_file[n])) in_deps_per_file = true;
+    }
+
     if(!Settings::isPrefixBundled(dep.getPrefix())) return;
     
-    deps.push_back(dep);
+    if(!in_deps) deps.push_back(dep);
+    if(!in_deps_per_file) deps_per_file[filename].push_back(dep);
 }
 
 /*
@@ -192,6 +210,7 @@ void collectDependencies(std::string filename, std::vector<std::string>& lines)
     
     // split output
     tokenize(output, "\n", &lines);
+    deps_collected[filename] = true;
 }
 
 
@@ -216,7 +235,7 @@ void collectDependencies(std::string filename)
             collectRpathsForFilename(filename);
         }
 
-        addDependency(dep_path);
+        addDependency(dep_path, filename);
     }
 }
 void collectSubDependencies()
@@ -248,12 +267,14 @@ void collectSubDependencies()
                 
                 // trim useless info, keep only library name
                 std::string dep_path = lines[n].substr(1, lines[n].rfind(" (") - 1);
+                std::string full_path = dep_path;
                 if (isRpath(dep_path))
                 {
-                    collectRpathsForFilename(searchFilenameInRpaths(dep_path));
+                    full_path = searchFilenameInRpaths(dep_path);
+                    collectRpathsForFilename(full_path);
                 }
 
-                addDependency(dep_path);
+                addDependency(dep_path, full_path);
             }//next
         }//next
         
