@@ -53,7 +53,7 @@ void changeLibPathsOnFile(std::string file_to_fix)
 
 bool isRpath(const std::string& path)
 {
-    return path.find("@rpath") == 0;
+    return path.find("@rpath") == 0 || path.find("@loader_path") == 0;
 }
 
 void collectRpaths(const std::string& filename)
@@ -114,7 +114,7 @@ std::string searchFilenameInRpaths(const std::string& rpath_file)
 {
     char buffer[PATH_MAX];
     std::string fullpath;
-    std::string suffix = rpath_file.substr(7, rpath_file.size()-6);
+    std::string suffix = rpath_file.substr(rpath_file.rfind("/")+1);
 
     for (std::set<std::string>::iterator it = rpaths.begin(); it != rpaths.end(); ++it)
     {
