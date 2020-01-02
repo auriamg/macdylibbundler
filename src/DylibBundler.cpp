@@ -267,14 +267,12 @@ void collectSubDependencies()
                 
                 // trim useless info, keep only library name
                 std::string dep_path = lines[n].substr(1, lines[n].rfind(" (") - 1);
-                std::string full_path = dep_path;
                 if (isRpath(dep_path))
                 {
-                    full_path = searchFilenameInRpaths(dep_path);
-                    collectRpathsForFilename(full_path);
+                    collectRpathsForFilename(searchFilenameInRpaths(dep_path));
                 }
 
-                addDependency(dep_path, full_path);
+                addDependency(dep_path, original_path);
             }//next
         }//next
         
