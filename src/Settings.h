@@ -47,8 +47,23 @@ void canCreateDir(bool permission);
 bool bundleLibs();
 void bundleLibs(bool on);
 
+bool bundleFrameworks();
+void bundleFrameworks(bool on);
+
+bool quietOutput();
+void quietOutput(bool status);
+
+bool appBundleProvided();
+std::string appBundle();
+void appBundle(std::string path);
+
 std::string destFolder();
 void destFolder(std::string path);
+
+std::string executableFolder();
+std::string frameworksFolder();
+std::string pluginsFolder();
+std::string resourcesFolder();
 
 void addFileToFix(std::string path);
 int fileToFixAmount();
@@ -60,6 +75,13 @@ void inside_lib_path(std::string p);
 void addSearchPath(std::string path);
 int searchPathAmount();
 std::string searchPath(const int n);
+
+void addUserSearchPath(std::string path);
+size_t userSearchPathAmount();
+std::string userSearchPath(const int n);
+
+bool missingPrefixes();
+void missingPrefixes(bool status);
 
 }
 #endif

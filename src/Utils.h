@@ -31,17 +31,44 @@ THE SOFTWARE.
 
 class Library;
 
+std::string filePrefix(std::string in);
+std::string stripPrefix(std::string in);
+
+std::string getFrameworkRoot(std::string in);
+std::string getFrameworkPath(std::string in);
+
+std::string stripLSlash(std::string in);
+
+// trim from end (in place)
+void rtrim_in_place(std::string& s);
+// trim from end (copying)
+std::string rtrim(std::string s);
+
 void tokenize(const std::string& str, const char* delimiters, std::vector<std::string>*);
 bool fileExists( std::string filename );
 
 void copyFile(std::string from, std::string to);
 
+void deleteFile(std::string path, bool overwrite);
+void deleteFile(std::string path);
+
+std::vector<std::string> lsDir(const std::string& path);
+bool mkdir(const std::string& path);
+
 // executes a command in the native shell and returns output in string
 std::string system_get_output(std::string cmd);
-
 // like 'system', runs a command on the system shell, but also prints the command to stdout.
-int systemp(std::string& cmd);
+int systemp(const std::string& cmd);
+
+std::string bundleExecutableName(const std::string& app_bundle_path);
+void changeId(const std::string& binary_file, const std::string& new_id);
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name);
-std::string getUserInputDirForFile(const std::string& filename);
+
+std::string getUserInputDirForFile(const std::string& filename, const std::string& dependent_file);
+
+// check the same paths the system would search for dylibs
+void initSearchPaths();
+
+void createQtConf(std::string directory);
 
 #endif

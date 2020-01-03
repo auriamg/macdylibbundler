@@ -28,18 +28,51 @@ THE SOFTWARE.
 #include "Settings.h"
 #include <cstdlib>
 #include <unistd.h>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <cstdio>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 using namespace std;
 
-/*
-void setInstallPath(string loc)
+string filePrefix(string in)
 {
-    path_to_libs_folder = loc;
-}*/
+    return in.substr(0, in.rfind("/")+1);
+}
+
+string stripPrefix(string in)
+{
+    return in.substr(in.rfind("/")+1);
+}
+
+string getFrameworkRoot(string in)
+{
+    return in.substr(0, in.find(".framework")+10);
+}
+
+string getFrameworkPath(string in)
+{
+    return in.substr(in.rfind(".framework/")+11);
+}
+
+string stripLSlash(string in)
+{
+    if (in[0] == '.' && in[1] == '/') in = in.substr(2, in.size());
+    return in;
+}
+
+void rtrim_in_place(string& s)
+{
+    s.erase(find_if(s.rbegin(), s.rend(), [](unsigned char c){ return !isspace(c); }).base(), s.end());
+}
+
+string rtrim(string s)
+{
+    rtrim_in_place(s);
+    return s;
+}
 
 void tokenize(const string& str, const char* delim, vector<string>* vectorarg)
 {
@@ -66,8 +99,6 @@ void tokenize(const string& str, const char* delim, vector<string>* vectorarg)
     }
     
 }
-
-
 
 bool fileExists( std::string filename )
 {
@@ -108,7 +139,7 @@ void copyFile(string from, string to)
     string override_permission = string(override ? "-f " : "-n ");
         
     // copy file to local directory
-    string command = string("cp ") + override_permission + string("\"") + from + string("\" \"") + to + string("\"");
+    string command = string("cp -R ") + override_permission + string("\"") + from + string("\" \"") + to + string("\"");
     if( from != to && systemp( command ) != 0 )
     {
         cerr << "\n\nError : An error occured while trying to copy file " << from << " to " << to << endl;
@@ -116,12 +147,50 @@ void copyFile(string from, string to)
     }
     
     // give it write permission
-    string command2 = string("chmod +w \"") + to + "\"";
+    string command2 = string("chmod -R +w \"") + to + "\"";
     if( systemp( command2 ) != 0 )
     {
         cerr << "\n\nError : An error occured while trying to set write permissions on file " << to << endl;
         exit(1);
     }
+}
+
+void deleteFile(string path, bool overwrite)
+{
+    string overwrite_permission = string(overwrite ? "-f " : "");
+    string command = string("rm -r ") + overwrite_permission + "\"" + path + "\"";
+    if( systemp( command ) != 0 )
+    {
+        cerr << "\n\nError: An error occured while trying to delete " << path << endl;
+        exit(1);
+    }
+}
+
+void deleteFile(string path)
+{
+    bool overwrite = Settings::canOverwriteFiles();
+    deleteFile(path, overwrite);
+}
+
+vector<string> lsDir(const string& path)
+{
+    string cmd = string("ls \"") + path + "\"";
+    string output = system_get_output(cmd);
+    vector<string> files;
+    tokenize(output, "\n", &files);
+    return files;
+}
+
+bool mkdir(const string& path)
+{
+    cout << "Creating directory " << path << endl;
+    string command = string("mkdir -p \"") + path + "\"";
+    if( systemp( command ) != 0 )
+    {
+        cerr << "\n/!\\ ERROR: An error occured while creating " << path << endl;
+        return false;
+    }
+    return true;
 }
 
 std::string system_get_output(std::string cmd)
@@ -161,10 +230,26 @@ std::string system_get_output(std::string cmd)
     return full_output;
 }
 
-int systemp(std::string& cmd)
+int systemp(const std::string& cmd)
 {
-    std::cout << "    " << cmd.c_str() << std::endl;
+    if( !Settings::quietOutput() ) std::cout << "    " << cmd.c_str() << "\n";
     return system(cmd.c_str());
+}
+
+string bundleExecutableName(const string& app_bundle_path)
+{
+    string cmd = string("/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \"") + app_bundle_path + "Contents/Info.plist\"";
+    return rtrim( system_get_output(cmd) );
+}
+
+void changeId(const string& binary_file, const string& new_id)
+{
+    string command = string("install_name_tool -id \"") + new_id + "\" \"" + binary_file + "\"";
+    if( systemp( command ) != 0 )
+    {
+        cerr << "\n\nError: An error occured while trying to change identity of library " << binary_file << endl;
+        exit(1);
+    }
 }
 
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name)
@@ -177,7 +262,7 @@ void changeInstallName(const std::string& binary_file, const std::string& old_na
     }
 }
 
-std::string getUserInputDirForFile(const std::string& filename)
+std::string getUserInputDirForFile(const std::string& filename, const std::string& dependent_file)
 {
     const int searchPathAmount = Settings::searchPathAmount();
     for(int n=0; n<searchPathAmount; n++)
@@ -185,16 +270,21 @@ std::string getUserInputDirForFile(const std::string& filename)
         auto searchPath = Settings::searchPath(n);
         if( !searchPath.empty() && searchPath[ searchPath.size()-1 ] != '/' ) searchPath += "/";
 
-        if( !fileExists( searchPath+filename ) ) {
-            continue;
-        } else {
+        if( !fileExists( searchPath+filename ) ) continue;
+
+        if( !Settings::quietOutput() )
+        {
             std::cerr << (searchPath+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
-            return searchPath;
         }
+        return searchPath;
     }
 
     while (true)
     {
+        if( Settings::quietOutput() )
+        {
+            std::cerr << "\n/!\\ WARNING: Dependency " << filename << " of " << dependent_file << " not found\n";
+        }
         std::cout << "Please specify the directory where this library is located (or enter 'quit' to abort): ";  fflush(stdout);
 
         std::string prefix;
@@ -213,7 +303,20 @@ std::string getUserInputDirForFile(const std::string& filename)
         else
         {
             std::cerr << (prefix+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
+            Settings::addSearchPath(prefix);
             return prefix;
         }
     }
+}
+
+void createQtConf(std::string directory)
+{
+    std::string contents = "[Paths]\n"
+                           "Plugins = PlugIns\n"
+                           "Imports = Resources/qml\n"
+                           "Qml2Imports = Resources/qml\n";
+    if( directory[ directory.size()-1 ] != '/' ) directory += "/";
+    std::ofstream out(directory + "qt.conf");
+    out << contents;
+    out.close();
 }
