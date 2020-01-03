@@ -26,22 +26,56 @@ THE SOFTWARE.
 #ifndef _utils_h_
 #define _utils_h_
 
+#include <map>
 #include <string>
 #include <vector>
 
-class Library;
+bool isRpath(const std::string& path);
+
+std::string filePrefix(const std::string& in);
+std::string stripPrefix(const std::string& in);
+
+std::string getFrameworkRoot(const std::string& in);
+std::string getFrameworkPath(const std::string& in);
+
+std::string stripLSlash(const std::string& in);
+
+// trim from end
+std::string& rtrim(std::string& s);
 
 void tokenize(const std::string& str, const char* delimiters, std::vector<std::string>*);
-bool fileExists( std::string filename );
+bool fileExists(const std::string& filename);
 
-void copyFile(std::string from, std::string to);
+void copyFile(const std::string& from, const std::string& to);
+
+bool deleteFile(const std::string& path, bool overwrite);
+bool deleteFile(const std::string& path);
+
+std::vector<std::string> lsDir(const std::string& path);
+bool mkdir(const std::string& path);
 
 // executes a command in the native shell and returns output in string
 std::string system_get_output(std::string cmd);
-
 // like 'system', runs a command on the system shell, but also prints the command to stdout.
-int systemp(std::string& cmd);
+int systemp(const std::string& cmd);
+
+std::string bundleExecutableName(const std::string& app_bundle_path);
+void changeId(const std::string& binary_file, const std::string& new_id);
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name);
-std::string getUserInputDirForFile(const std::string& filename);
+
+std::string getUserInputDirForFile(const std::string& filename, const std::string& dependent_file);
+
+void otool(const std::string& flags, const std::string& file, std::vector<std::string>& lines);
+void parseLoadCommands(const std::string& file,
+                       const std::map<std::string, std::string>& cmds_values,
+                       std::map<std::string, std::vector<std::string> >& cmds_results);
+
+std::string searchFilenameInRpaths(const std::string& rpath_file, const std::string& dependent_file);
+std::string searchFilenameInRpaths(const std::string& rpath_file);
+
+// check the same paths the system would search for dylibs
+void initSearchPaths();
+
+void createQtConf(std::string directory);
 
 #endif

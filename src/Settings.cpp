@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "Settings.h"
+#include "Utils.h"
 #include <vector>
 
 namespace Settings
@@ -31,6 +32,18 @@ namespace Settings
 bool overwrite_files = false;
 bool overwrite_dir = false;
 bool create_dir = false;
+bool bundle_libs = false;
+bool bundle_frameworks = false;
+bool quiet_output = false;
+
+std::string dest_folder_str = "./libs/";
+std::string dest_folder_str_app = "./Frameworks/";
+std::string dest_folder = dest_folder_str;
+std::string dest_path = dest_folder;
+
+std::string inside_path_str = "@executable_path/../libs/";
+std::string inside_path_str_app = "@executable_path/../Frameworks/";
+std::string inside_path = inside_path_str;
 
 bool canOverwriteFiles(){ return overwrite_files; }
 bool canOverwriteDir(){ return overwrite_dir; }
@@ -40,33 +53,76 @@ void canOverwriteFiles(bool permission){ overwrite_files = permission; }
 void canOverwriteDir(bool permission){ overwrite_dir = permission; }
 void canCreateDir(bool permission){ create_dir = permission; }
 
+bool bundleLibs(){ return bundle_libs; }
+void bundleLibs(bool on){ bundle_libs = on; }
 
-bool bundleLibs_bool = false;
-bool bundleLibs(){ return bundleLibs_bool; }
-void bundleLibs(bool on){ bundleLibs_bool = on; }
+bool bundleFrameworks(){ return bundle_frameworks; }
+void bundleFrameworks(bool on){ bundle_frameworks = on; }
 
+bool quietOutput(){ return quiet_output; }
+void quietOutput(bool status){ quiet_output = status; }
 
-std::string dest_folder_str = "./libs/";
-std::string destFolder(){ return dest_folder_str; }
-void destFolder(std::string path)
+std::string app_bundle;
+bool appBundleProvided(){ return !app_bundle.empty(); }
+std::string appBundle(){ return app_bundle; }
+void appBundle(std::string path)
 {
-    dest_folder_str = path;
+    app_bundle = path;
+    char buffer[PATH_MAX];
+    if(realpath(app_bundle.c_str(), buffer))
+        app_bundle = buffer;
     // fix path if needed so it ends with '/'
-    if( dest_folder_str[ dest_folder_str.size()-1 ] != '/' ) dest_folder_str += "/";
+    if( app_bundle[ app_bundle.size()-1 ] != '/' )
+        app_bundle += "/";
+
+    std::string bundle_executable_path = app_bundle + "Contents/MacOS/" + bundleExecutableName(app_bundle);
+    if(realpath(bundle_executable_path.c_str(), buffer))
+        bundle_executable_path = buffer;
+    addFileToFix(bundle_executable_path);
+
+    if(inside_path == inside_path_str)
+        inside_path = inside_path_str_app;
+    if(dest_folder == dest_folder_str)
+        dest_folder = dest_folder_str_app;
+
+    dest_path = app_bundle + "Contents/" + stripLSlash(dest_folder);
+    if(realpath(dest_path.c_str(), buffer))
+        dest_path = buffer;
+    if( dest_path[ dest_path.size()-1 ] != '/' )
+        dest_path += "/";
 }
 
+std::string destFolder(){ return dest_path; }
+void destFolder(std::string path)
+{
+    dest_path = path;
+    if(appBundleProvided()) dest_path = app_bundle + "Contents/" + stripLSlash(path);
+    char buffer[PATH_MAX];
+    if(realpath(dest_path.c_str(), buffer)) dest_path = buffer;
+    if( dest_path[ dest_path.size()-1 ] != '/' ) dest_path += "/";
+}
+
+std::string executableFolder() { return app_bundle + "Contents/MacOS/"; }
+std::string frameworksFolder() { return app_bundle + "Contents/Frameworks/"; }
+std::string pluginsFolder() { return app_bundle + "Contents/PlugIns/"; }
+std::string resourcesFolder() { return app_bundle + "Contents/Resources/"; }
+
 std::vector<std::string> files;
-void addFileToFix(std::string path){ files.push_back(path); }
+void addFileToFix(std::string path)
+{
+    char buffer[PATH_MAX];
+    if(realpath(path.c_str(), buffer)) path = buffer;
+    files.push_back(path);
+}
 int fileToFixAmount(){ return files.size(); }
 std::string fileToFix(const int n){ return files[n]; }
 
-std::string inside_path_str = "@executable_path/../libs/";
-std::string inside_lib_path(){ return inside_path_str; }
+std::string inside_lib_path(){ return inside_path; }
 void inside_lib_path(std::string p)
 {
-    inside_path_str = p;
+    inside_path = p;
     // fix path if needed so it ends with '/'
-    if( inside_path_str[ inside_path_str.size()-1 ] != '/' ) inside_path_str += "/";
+    if( inside_path[ inside_path.size()-1 ] != '/' ) inside_path += "/";
 }
 
 std::vector<std::string> prefixes_to_ignore;
@@ -97,7 +153,7 @@ bool isPrefixIgnored(std::string prefix)
 
 bool isPrefixBundled(std::string prefix)
 {
-    if(prefix.find(".framework") != std::string::npos) return false;
+    if(!bundle_frameworks && prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
     if(isSystemLibrary(prefix)) return false;
     if(isPrefixIgnored(prefix)) return false;
@@ -105,9 +161,32 @@ bool isPrefixBundled(std::string prefix)
     return true;
 }
 
-std::vector<std::string> searchPaths;
-void addSearchPath(std::string path){ searchPaths.push_back(path); }
-int searchPathAmount(){ return searchPaths.size(); }
-std::string searchPath(const int n){ return searchPaths[n]; }
+std::vector<std::string> search_paths;
+std::vector<std::string> searchPaths() { return search_paths; }
+void addSearchPath(const std::string& path) { search_paths.push_back(path); }
+size_t searchPathAmount(){ return search_paths.size(); }
+std::string searchPath(const int n){ return search_paths[n]; }
+
+std::vector<std::string> user_search_paths;
+std::vector<std::string> userSearchPaths() { return user_search_paths; }
+void addUserSearchPath(const std::string& path) { user_search_paths.push_back(path); }
+size_t userSearchPathAmount(){ return user_search_paths.size(); }
+std::string userSearchPath(const int n){ return user_search_paths[n]; }
+
+// if some libs are missing prefixes, this will be set to true
+// more stuff will then be necessary to do
+bool missing_prefixes = false;
+bool missingPrefixes(){ return missing_prefixes; }
+void missingPrefixes(bool status){ missing_prefixes = status; }
+
+std::map<std::string, std::string> rpath_to_fullpath;
+std::string getFullPath(const std::string& rpath){ return rpath_to_fullpath[rpath]; }
+void rpathToFullPath(const std::string& rpath, const std::string& fullpath){ rpath_to_fullpath[rpath] = fullpath; }
+bool rpathFound(const std::string& rpath){ return rpath_to_fullpath.find(rpath) != rpath_to_fullpath.end(); }
+
+std::map<std::string, std::vector<std::string>> rpaths_per_file;
+std::vector<std::string> getRpathsForFile(const std::string& file){ return rpaths_per_file[file]; }
+void addRpathForFile(const std::string& file, const std::string& rpath){ rpaths_per_file[file].push_back(rpath); }
+bool fileHasRpath(const std::string& file){ return rpaths_per_file.find(file) != rpaths_per_file.end(); }
 
 }

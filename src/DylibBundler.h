@@ -27,10 +27,15 @@ THE SOFTWARE.
 
 #include <string>
 
-void collectDependencies(std::string filename);
+void changeLibPathsOnFile(std::string file_to_fix);
+void fixRpathsOnFile(const std::string& original_file, const std::string& file_to_fix);
+
+void addDependency(const std::string& path, const std::string& dependent_file);
+void collectDependenciesRpaths(const std::string& dependent_file);
 void collectSubDependencies();
+
 void doneWithDeps_go();
-bool isRpath(const std::string& path);
-std::string searchFilenameInRpaths(const std::string& rpath_dep);
+
+void copyQtPlugins();
 
 #endif
