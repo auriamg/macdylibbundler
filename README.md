@@ -88,6 +88,8 @@ Copy framework dependencies to app bundle and fix internal names and rpaths. If 
 
 A command may look like
 `% dylibbundler -cd -b -f -a ./HelloWorld.app -x ./HelloWorld.app/Contents/PlugIns/printsupport`
+or
+`% dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld -d ./HelloWorld.app/Contents/libs/`
 
 
 If you want to create a universal binary by merging together two builds from Apple Silicon and Intel machines, you can ease it up by putting the arm64 and x86_64 libs in different directories, then to create the universal binary you only have to lipo the executable.
