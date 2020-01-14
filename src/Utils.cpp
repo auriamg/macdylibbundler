@@ -167,6 +167,16 @@ int systemp(std::string& cmd)
     return system(cmd.c_str());
 }
 
+void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name)
+{
+    std::string command = std::string("install_name_tool -change ") + old_name + " " + new_name + " " + binary_file;
+    if( systemp( command ) != 0 )
+    {
+        std::cerr << "\n\nError: An error occured while trying to fix dependencies of " << binary_file << std::endl;
+        exit(1);
+    }
+}
+
 std::string getUserInputDirForFile(const std::string& filename)
 {
     const int searchPathAmount = Settings::searchPathAmount();

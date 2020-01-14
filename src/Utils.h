@@ -41,6 +41,7 @@ std::string system_get_output(std::string cmd);
 
 // like 'system', runs a command on the system shell, but also prints the command to stdout.
 int systemp(std::string& cmd);
+void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name);
 std::string getUserInputDirForFile(const std::string& filename);
 
 #endif

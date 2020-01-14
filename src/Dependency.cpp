@@ -210,55 +210,24 @@ void Dependency::copyYourself()
 void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
 {
     // for main lib file
-    std::string command = std::string("install_name_tool -change ") +
-    getOriginalPath() + " " + getInnerPath() + " " + file_to_fix;
-    
-    if( systemp( command ) != 0 )
-    {
-        std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
-        exit(1);
-    }
-    
+    changeInstallName(file_to_fix, getOriginalPath(), getInnerPath());
     // for symlinks
     const int symamount = symlinks.size();
     for(int n=0; n<symamount; n++)
     {
-        command = std::string("install_name_tool -change ") +
-        symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
-        
-        if( systemp( command ) != 0 )
-        {
-            std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
-            exit(1);
-        }
+        changeInstallName(file_to_fix, symlinks[n], getInnerPath());
     }
-    
     
     // FIXME - hackish
     if(missing_prefixes)
     {
         // for main lib file
-        command = std::string("install_name_tool -change ") +
-        filename + " " + getInnerPath() + " " + file_to_fix;
-        
-        if( systemp( command ) != 0 )
-        {
-            std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
-            exit(1);
-        }
-        
+        changeInstallName(file_to_fix, filename, getInnerPath());
         // for symlinks
         const int symamount = symlinks.size();
         for(int n=0; n<symamount; n++)
         {
-            command = std::string("install_name_tool -change ") +
-            symlinks[n] + " " + getInnerPath() + " " + file_to_fix;
-            
-            if( systemp( command ) != 0 )
-            {
-                std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
-                exit(1);
-            }
-        }//next
-    }// end if(missing_prefixes)
+            changeInstallName(file_to_fix, symlinks[n], getInnerPath());
+        }
+    }
 }
