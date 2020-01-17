@@ -198,8 +198,8 @@ void addDependency(std::string path, std::string filename)
  */
 void collectDependencies(std::string filename, std::vector<std::string>& lines)
 {
-    // execute "otool -L" on the given file and collect the command's output
-    std::string cmd = "otool -L " + filename;
+    // execute "otool -l" on the given file and collect the command's output
+    std::string cmd = "otool -l " + filename;
     std::string output = system_get_output(cmd);
 
     if(output.find("can't open file")!=std::string::npos or output.find("No such file")!=std::string::npos or output.size()<1)
@@ -209,8 +209,30 @@ void collectDependencies(std::string filename, std::vector<std::string>& lines)
     }
     
     // split output
-    tokenize(output, "\n", &lines);
-    deps_collected[filename] = true;
+    std::vector<std::string> raw_lines;
+    tokenize(output, "\n", &raw_lines);
+
+    bool searching = false;
+    for(const auto& line : raw_lines) {
+        if (line.find("cmd LC_LOAD_DYLIB") != std::string::npos)
+        {
+            if (searching)
+            {
+                std::cerr << "\n\n/!\\ ERROR: Failed to find name before next cmd" << std::endl;
+                exit(1);
+            }
+            searching = true;
+        }
+        else if (searching)
+        {
+            size_t found = line.find("name ");
+            if (found != std::string::npos)
+            {
+                lines.push_back('\t' + line.substr(found+5, std::string::npos));
+                searching = false;
+            }
+        }
+    }
 }
 
 
@@ -237,6 +259,7 @@ void collectDependencies(std::string filename)
 
         addDependency(dep_path, filename);
     }
+    deps_collected[filename] = true;
 }
 void collectSubDependencies()
 {
