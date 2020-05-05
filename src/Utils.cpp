@@ -108,7 +108,7 @@ void copyFile(string from, string to)
     string override_permission = string(override ? "-f " : "-n ");
         
     // copy file to local directory
-    string command = string("cp ") + override_permission + from + string(" ") + to;
+    string command = string("cp ") + override_permission + string("\"") + from + string("\" \"") + to + string("\"");
     if( from != to && systemp( command ) != 0 )
     {
         cerr << "\n\nError : An error occured while trying to copy file " << from << " to " << to << endl;
@@ -116,7 +116,7 @@ void copyFile(string from, string to)
     }
     
     // give it write permission
-    string command2 = string("chmod +w ") + to;
+    string command2 = string("chmod +w \"") + to + "\"";
     if( systemp( command2 ) != 0 )
     {
         cerr << "\n\nError : An error occured while trying to set write permissions on file " << to << endl;
@@ -169,7 +169,7 @@ int systemp(std::string& cmd)
 
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name)
 {
-    std::string command = std::string("install_name_tool -change ") + old_name + " " + new_name + " " + binary_file;
+    std::string command = std::string("install_name_tool -change \"") + old_name + "\" \"" + new_name + "\" \"" + binary_file + "\"";
     if( systemp( command ) != 0 )
     {
         std::cerr << "\n\nError: An error occured while trying to fix dependencies of " << binary_file << std::endl;
