@@ -199,7 +199,7 @@ void Dependency::copyYourself()
     copyFile(getOriginalPath(), getInstallPath());
     
     // Fix the lib's inner name
-    std::string command = std::string("install_name_tool -id ") + getInnerPath() + " " + getInstallPath();
+    std::string command = std::string("install_name_tool -id \"") + getInnerPath() + "\" \"" + getInstallPath() + "\"";
     if( systemp( command ) != 0 )
     {
         std::cerr << "\n\nError : An error occured while trying to change identity of library " << getInstallPath() << std::endl;

@@ -156,8 +156,8 @@ void fixRpathsOnFile(const std::string& original_file, const std::string& file_t
 
     for (size_t i=0; i < rpaths_to_fix.size(); ++i)
     {
-        std::string command = std::string("install_name_tool -rpath ") +
-                rpaths_to_fix[i] + " " + Settings::inside_lib_path() + " " + file_to_fix;
+        std::string command = std::string("install_name_tool -rpath \"") +
+                rpaths_to_fix[i] + "\" \"" + Settings::inside_lib_path() + "\" \"" + file_to_fix + "\"";
         if ( systemp(command) != 0)
         {
             std::cerr << "\n\nError : An error occured while trying to fix dependencies of " << file_to_fix << std::endl;
@@ -199,7 +199,7 @@ void addDependency(std::string path, std::string filename)
 void collectDependencies(std::string filename, std::vector<std::string>& lines)
 {
     // execute "otool -l" on the given file and collect the command's output
-    std::string cmd = "otool -l " + filename;
+    std::string cmd = "otool -l \"" + filename + "\"";
     std::string output = system_get_output(cmd);
 
     if(output.find("can't open file")!=std::string::npos or output.find("No such file")!=std::string::npos or output.size()<1)
@@ -314,7 +314,7 @@ void createDestDir()
     if(dest_exists and Settings::canOverwriteDir())
     {
         std::cout << "* Erasing old output directory " << dest_folder.c_str() << std::endl;
-        std::string command = std::string("rm -r ") + dest_folder;
+        std::string command = std::string("rm -r \"") + dest_folder + "\"";
         if( systemp( command ) != 0)
         {
             std::cerr << "\n\nError : An error occured while attempting to overwrite dest folder." << std::endl;
@@ -329,7 +329,7 @@ void createDestDir()
         if(Settings::canCreateDir())
         {
             std::cout << "* Creating output directory " << dest_folder.c_str() << std::endl;
-            std::string command = std::string("mkdir -p ") + dest_folder;
+            std::string command = std::string("mkdir -p \"") + dest_folder + "\"";
             if( systemp( command ) != 0)
             {
                 std::cerr << "\n\nError : An error occured while creating dest folder." << std::endl;
