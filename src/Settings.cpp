@@ -76,6 +76,14 @@ void ignore_prefix(std::string prefix)
     prefixes_to_ignore.push_back(prefix);
 }
 
+bool isSystemLibrary(std::string prefix)
+{
+    if(prefix.find("/usr/lib/") == 0) return true;
+    if(prefix.find("/System/Library/") == 0) return true;
+
+    return false;
+}
+
 bool isPrefixIgnored(std::string prefix)
 {
     const int prefix_amount = prefixes_to_ignore.size();
@@ -91,7 +99,7 @@ bool isPrefixBundled(std::string prefix)
 {
     if(prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
-    if(prefix.compare("/usr/lib/") == 0) return false;
+    if(isSystemLibrary(prefix)) return false;
     if(isPrefixIgnored(prefix)) return false;
     
     return true;
