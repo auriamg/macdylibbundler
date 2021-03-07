@@ -29,7 +29,8 @@ THE SOFTWARE.
 
 namespace Settings
 {
-    
+
+bool isSystemLibrary(std::string prefix);
 bool isPrefixBundled(std::string prefix);
 bool isPrefixIgnored(std::string prefix);
 void ignore_prefix(std::string prefix);
