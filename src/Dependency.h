@@ -38,8 +38,10 @@ class Dependency
     
     // installation
     std::string new_name;
+
+    bool is_framework;
 public:
-    Dependency(std::string path);
+    Dependency(std::string path, std::string dependent_file);
 
     void print();
 
@@ -47,7 +49,9 @@ public:
     std::string getOriginalPath() const{ return prefix+filename; }
     std::string getInstallPath();
     std::string getInnerPath();
-        
+
+    bool isFramework(){ return is_framework; }
+
     void addSymlink(std::string s);
     int getSymlinkAmount() const{ return symlinks.size(); }
 

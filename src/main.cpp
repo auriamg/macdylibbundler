@@ -53,17 +53,20 @@ void showHelp()
 {
     std::cout << "dylibbundler " << VERSION << std::endl;
     std::cout << "dylibbundler is a utility that helps bundle dynamic libraries inside mac OS X app bundles.\n" << std::endl;
-    
-    std::cout << "-x, --fix-file <file to fix (executable or app plug-in)>" << std::endl;
-    std::cout << "-b, --bundle-deps" << std::endl;
-    std::cout << "-d, --dest-dir <directory to send bundled libraries (relative to cwd)>" << std::endl;
-    std::cout << "-p, --install-path <'inner' path of bundled libraries (usually relative to executable, by default '@executable_path/../libs/')>" << std::endl;
-    std::cout << "-s, --search-path <directory to add to list of locations searched>" << std::endl;
+
+    std::cout << "-a,  --app <application bundle to make self-contained> (fixes the main executable of the app bundle)" << std::endl;
+    std::cout << "-x,  --fix-file <file to fix (executable or app plug-in)> (additional files to fix up inside app)" << std::endl;
+    std::cout << "-b,  --bundle-deps" << std::endl;
+    std::cout << "-f,  --frameworks (copy dependencies that are frameworks)" << std::endl;
+    std::cout << "-d,  --dest-dir <directory to send bundled libraries> (relative to MyApp.app/Contents if '-a' is passed)" << std::endl;
+    std::cout << "-p,  --install-path <'inner' path of bundled libraries> (default: '@executable_path/../libs/' or '@executable_path/../Frameworks/' if '-a' is passed)" << std::endl;
+    std::cout << "-s,  --search-path <directory to add to list of locations searched>" << std::endl;
     std::cout << "-of, --overwrite-files (allow overwriting files in output directory)" << std::endl;
     std::cout << "-od, --overwrite-dir (totally overwrite output directory if it already exists. implies --create-dir)" << std::endl;
     std::cout << "-cd, --create-dir (creates output directory if necessary)" << std::endl;
-    std::cout << "-i, --ignore <location to ignore> (will ignore libraries in this directory)" << std::endl;
-    std::cout << "-h, --help" << std::endl;
+    std::cout << "-i,  --ignore <location to ignore> (will ignore libraries in this directory)" << std::endl;
+    std::cout << "-q,  --quiet (less verbose output)" << std::endl;
+    std::cout << "-h,  --help" << std::endl;
 }
 
 int main (int argc, char * const argv[])
@@ -72,7 +75,13 @@ int main (int argc, char * const argv[])
     // parse arguments    
     for(int i=0; i<argc; i++)
     {
-        if(strcmp(argv[i],"-x")==0 or strcmp(argv[i],"--fix-file")==0)
+        if(strcmp(argv[i],"-a")==0 || strcmp(argv[i],"--app")==0)
+        {
+            i++;
+            Settings::appBundle(argv[i]);
+            continue;
+        }
+        else if(strcmp(argv[i],"-x")==0 or strcmp(argv[i],"--fix-file")==0)
         {
             i++;
             Settings::addFileToFix(argv[i]);
@@ -82,6 +91,11 @@ int main (int argc, char * const argv[])
         {
             Settings::bundleLibs(true);
             continue;    
+        }
+        else if(strcmp(argv[i],"-f")==0 || strcmp(argv[i],"--bundle-frameworks")==0)
+        {
+            Settings::bundleFrameworks(true);
+            continue;
         }
         else if(strcmp(argv[i],"-p")==0 or strcmp(argv[i],"--install-path")==0)
         {
@@ -101,6 +115,12 @@ int main (int argc, char * const argv[])
             Settings::destFolder(argv[i]);
             continue;
         }
+        else if(strcmp(argv[i],"-s")==0 or strcmp(argv[i],"--search-path")==0)
+        {
+            i++;
+            Settings::addUserSearchPath(argv[i]);
+            continue;
+        }
         else if(strcmp(argv[i],"-of")==0 or strcmp(argv[i],"--overwrite-files")==0)
         {
             Settings::canOverwriteFiles(true);
@@ -117,16 +137,14 @@ int main (int argc, char * const argv[])
             Settings::canCreateDir(true);
             continue;    
         }
+        else if (strcmp(argv[i],"-q") == 0 || strcmp(argv[i],"--quiet") == 0) {
+            Settings::quietOutput(true);
+            continue;
+        }
         else if(strcmp(argv[i],"-h")==0 or strcmp(argv[i],"--help")==0)
         {
             showHelp();
             exit(0);    
-        }
-        if(strcmp(argv[i],"-s")==0 or strcmp(argv[i],"--search-path")==0)
-        {
-            i++;
-            Settings::addSearchPath(argv[i]);
-            continue;
         }
         else if(i>0)
         {
@@ -144,7 +162,7 @@ int main (int argc, char * const argv[])
         exit(0);
     }
     
-    std::cout << "* Collecting dependencies"; fflush(stdout);
+    std::cout << "Collecting dependencies..." << std::endl;
     
     const int amount = Settings::fileToFixAmount();
     for(int n=0; n<amount; n++)
