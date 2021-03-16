@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <set>
 #include <map>
+#include <sys/param.h>
 #ifdef __linux
 #include <linux/limits.h>
 #endif
