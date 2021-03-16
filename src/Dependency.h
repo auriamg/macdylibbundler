@@ -38,24 +38,28 @@ class Dependency
     
     // installation
     std::string new_name;
-public:
-    Dependency(std::string path);
 
-    void print();
+    bool is_framework;
+public:
+    Dependency(std::string path, std::string dependent_file);
+
+    void print() const;
 
     std::string getOriginalFileName() const{ return filename; }
     std::string getOriginalPath() const{ return prefix+filename; }
-    std::string getInstallPath();
-    std::string getInnerPath();
+    std::string getInstallPath() const;
+    std::string getInnerPath() const;
         
+    bool isFramework(){ return is_framework; }
+
     void addSymlink(std::string s);
     int getSymlinkAmount() const{ return symlinks.size(); }
 
     std::string getSymlink(const int i) const{ return symlinks[i]; }
     std::string getPrefix() const{ return prefix; }
 
-    void copyYourself();
-    void fixFileThatDependsOnMe(std::string file);
+    void copyYourself() const;
+    void fixFileThatDependsOnMe(const std::string& file) const;
     
     // Compares the given dependency with this one. If both refer to the same file,
     // it returns true and merges both entries into one.

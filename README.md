@@ -42,6 +42,11 @@ Here is a list of flags you can pass to dylibbundler on the terminal.
 displays a summary of options
 </blockquote>
 
+`-a`, `--app` (path to app bundle)
+<blockquote>
+Application bundle to make self-contained. Fixes the main executable of the app bundle. Add additional binary files to fix up with the `-x` flag.
+</blockquote>
+
 `-x`, `--fix-file` (executable or plug-in filepath)
 <blockquote>
 Fixes given executable or plug-in file (a .dylib can work too. anything on which `otool -L` works is accepted by `-x`). Dylibbundler will walk through the dependencies of the specified file to build a dependency list. It will also fix the said files' dependencies so that it expects to find the libraries relative to itself (e.g. in the app bundle) instead of at an absolute path (e.g. /usr/local/lib). To pass multiple files to fix, simply specify multiple `-x` flags.
@@ -53,14 +58,19 @@ Copies libaries to a local directory, fixes their internal name so that they are
 fixes dependencies where bundled libraries depend on each other. If this option is not passed, no libraries will be prepared for distribution.
 </blockquote>
 
+`-f`, `--frameworks`
+<blockquote>
+Copy framework dependencies to app bundle and fix internal names and rpaths. If this option is not passed, dependencies contained in frameworks will be ignored.
+</blockquote>
+
 `-i`, `--ignore` (path)
 > Dylibs in (path) will be ignored. By default, dylibbundler will ignore libraries installed in `/usr/lib` since they are assumed to be present by default on all OS X installations.*(It is usually recommend not to install additional stuff in `/usr/`, always use ` /usr/local/` or another prefix to avoid confusion between system libs and libs you added yourself)*
 
 `-d`, `--dest-dir` (directory)
-> Sets the name of the directory in which distribution-ready dylibs will be placed, relative to the current working directory. (Default is `./libs`) For an app bundle, it is often convenient to set it to something like `./MyApp.app/Contents/libs`.
+> Sets the name of the directory in which distribution-ready dylibs will be placed, relative to the current working directory. Default is either `./libs`, or `./MyApp.app/Contents/Frameworks` if using the `-a` flag for an app bundle.
 
 `-p`, `--install-path` (libraries install path)
-> Sets the "inner" installation path of libraries, usually inside the bundle and relative to executable. (Default is `@executable_path/../libs/`, which points to a directory named `libs` inside the `Contents` directory of the bundle.)
+> Sets the "inner" installation path of libraries, usually inside the bundle and relative to executable. Default is either `@executable_path/../libs/`, which points to a directory named `libs` inside the `Contents` directory of the bundle, or `@executable_path/../Frameworks/` if using the `-a` flag.
 
 `-s`, `--search-path` (search path)
 > Check for libraries in the specified path
@@ -77,16 +87,18 @@ fixes dependencies where bundled libraries depend on each other. If this option 
 > If the output directory does not exist, create it.
 
 A command may look like
+`% dylibbundler -cd -b -f -a ./HelloWorld.app -x ./HelloWorld.app/Contents/PlugIns/printsupport`
+or
 `% dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld -d ./HelloWorld.app/Contents/libs/`
 
 
-If you want to create a universal binary by merging together two builds from PPC and Intel machines, you can ease it up by putting the ppc and intel libs in different directories, then to create the universal binary you only have to lipo the executable.
+If you want to create a universal binary by merging together two builds from Apple Silicon and Intel machines, you can ease it up by putting the arm64 and x86_64 libs in different directories, then to create the universal binary you only have to lipo the executable.
 <code>
 <pre>
 % dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld
-    -d ./HelloWorld.app/Contents/libs-ppc/ -p @executable_path/../libs-ppc/
+    -d ./HelloWorld.app/Contents/libs-arm64/ -p @executable_path/../libs-arm64/
 
 % dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld
-    -d ./HelloWorld.app/Contents/libs-intel/ -p @executable_path/../libs-intel/
+    -d ./HelloWorld.app/Contents/libs-x86_64/ -p @executable_path/../libs-x86_64/
   </pre>
 </code>
