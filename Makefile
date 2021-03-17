@@ -1,16 +1,17 @@
 DESTDIR=
 PREFIX=/usr/local
-CXXFLAGS = -O2
+CXXFLAGS=-O2 -std=c++11
+
+CPP_FILES=$(wildcard src/*.cpp)
+OBJ_FILES=$(notdir $(CPP_FILES:.cpp=.o))
 
 all: dylibbundler
 
-dylibbundler:
-	$(CXX) $(CXXFLAGS) -c -I./src ./src/Settings.cpp -o ./Settings.o
-	$(CXX) $(CXXFLAGS) -c -I./src ./src/DylibBundler.cpp -o ./DylibBundler.o
-	$(CXX) $(CXXFLAGS) -c -I./src ./src/Dependency.cpp -o ./Dependency.o
-	$(CXX) $(CXXFLAGS) -c -I./src ./src/main.cpp -o ./main.o
-	$(CXX) $(CXXFLAGS) -c -I./src ./src/Utils.cpp -o ./Utils.o
-	$(CXX) $(CXXFLAGS) -o ./dylibbundler ./Settings.o ./DylibBundler.o ./Dependency.o ./main.o ./Utils.o
+dylibbundler: $(OBJ_FILES)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ_FILES)
+
+%.o: src/%.cpp
+	$(CXX) -c $(CXXFLAGS) -I./src $< -o $@
 
 clean:
 	rm -f *.o
