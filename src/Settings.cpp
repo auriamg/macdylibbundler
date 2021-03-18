@@ -48,7 +48,7 @@ void bundleLibs(bool on){ bundleLibs_bool = on; }
 
 std::string dest_folder_str = "./libs/";
 std::string destFolder(){ return dest_folder_str; }
-void destFolder(std::string path)
+void destFolder(const std::string& path)
 {
     dest_folder_str = path;
     // fix path if needed so it ends with '/'
@@ -56,13 +56,13 @@ void destFolder(std::string path)
 }
 
 std::vector<std::string> files;
-void addFileToFix(std::string path){ files.push_back(path); }
+void addFileToFix(const std::string& path){ files.push_back(path); }
 int fileToFixAmount(){ return files.size(); }
 std::string fileToFix(const int n){ return files[n]; }
 
 std::string inside_path_str = "@executable_path/../libs/";
 std::string inside_lib_path(){ return inside_path_str; }
-void inside_lib_path(std::string p)
+void inside_lib_path(const std::string& p)
 {
     inside_path_str = p;
     // fix path if needed so it ends with '/'
@@ -76,7 +76,7 @@ void ignore_prefix(std::string prefix)
     prefixes_to_ignore.push_back(prefix);
 }
 
-bool isSystemLibrary(std::string prefix)
+bool isSystemLibrary(const std::string& prefix)
 {
     if(prefix.find("/usr/lib/") == 0) return true;
     if(prefix.find("/System/Library/") == 0) return true;
@@ -84,7 +84,7 @@ bool isSystemLibrary(std::string prefix)
     return false;
 }
 
-bool isPrefixIgnored(std::string prefix)
+bool isPrefixIgnored(const std::string& prefix)
 {
     const int prefix_amount = prefixes_to_ignore.size();
     for(int n=0; n<prefix_amount; n++)
@@ -95,7 +95,7 @@ bool isPrefixIgnored(std::string prefix)
     return false;
 }
 
-bool isPrefixBundled(std::string prefix)
+bool isPrefixBundled(const std::string& prefix)
 {
     if(prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
@@ -106,7 +106,7 @@ bool isPrefixBundled(std::string prefix)
 }
 
 std::vector<std::string> searchPaths;
-void addSearchPath(std::string path){ searchPaths.push_back(path); }
+void addSearchPath(const std::string& path){ searchPaths.push_back(path); }
 int searchPathAmount(){ return searchPaths.size(); }
 std::string searchPath(const int n){ return searchPaths[n]; }
 
