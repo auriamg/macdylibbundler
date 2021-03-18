@@ -30,9 +30,9 @@ THE SOFTWARE.
 namespace Settings
 {
 
-bool isSystemLibrary(std::string prefix);
-bool isPrefixBundled(std::string prefix);
-bool isPrefixIgnored(std::string prefix);
+bool isSystemLibrary(const std::string& prefix);
+bool isPrefixBundled(const std::string& prefix);
+bool isPrefixIgnored(const std::string& prefix);
 void ignore_prefix(std::string prefix);
     
 bool canOverwriteFiles();
@@ -48,16 +48,16 @@ bool bundleLibs();
 void bundleLibs(bool on);
 
 std::string destFolder();
-void destFolder(std::string path);
+void destFolder(const std::string& path);
 
-void addFileToFix(std::string path);
+void addFileToFix(const std::string& path);
 int fileToFixAmount();
 std::string fileToFix(const int n);
 
 std::string inside_lib_path();
-void inside_lib_path(std::string p);
+void inside_lib_path(const std::string& p);
 
-void addSearchPath(std::string path);
+void addSearchPath(const std::string& path);
 int searchPathAmount();
 std::string searchPath(const int n);
 

@@ -32,15 +32,15 @@ THE SOFTWARE.
 class Library;
 
 void tokenize(const std::string& str, const char* delimiters, std::vector<std::string>*);
-bool fileExists( std::string filename );
+bool fileExists(const std::string& filename);
 
-void copyFile(std::string from, std::string to);
+void copyFile(const std::string& from, const std::string& to);
 
 // executes a command in the native shell and returns output in string
-std::string system_get_output(std::string cmd);
+std::string system_get_output(const std::string& cmd);
 
 // like 'system', runs a command on the system shell, but also prints the command to stdout.
-int systemp(std::string& cmd);
+int systemp(const std::string& cmd);
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name);
 std::string getUserInputDirForFile(const std::string& filename);
 

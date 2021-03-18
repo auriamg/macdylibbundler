@@ -49,24 +49,21 @@ std::string& rtrim(std::string &s) {
     return s;
 }
 
-//the paths to search for dylibs, store it globally to parse the environment variables only once
-std::vector<std::string> paths;
-
 //initialize the dylib search paths
 void initSearchPaths(){
     //Check the same paths the system would search for dylibs
     std::string searchPaths;
     char *dyldLibPath = std::getenv("DYLD_LIBRARY_PATH");
-    if( dyldLibPath!=0 )
+    if (dyldLibPath != nullptr)
         searchPaths = dyldLibPath;
     dyldLibPath = std::getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
-    if (dyldLibPath != 0)
+    if (dyldLibPath != nullptr)
     {
         if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
         searchPaths += dyldLibPath;
     }
     dyldLibPath = std::getenv("DYLD_FALLBACK_LIBRARY_PATH");
-    if (dyldLibPath!=0 )
+    if (dyldLibPath != nullptr)
     {
         if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
         searchPaths += dyldLibPath;
@@ -78,7 +75,7 @@ void initSearchPaths(){
         while(std::getline(ss, item, ':'))
         {
             if (item[ item.size()-1 ] != '/') item += "/";
-            paths.push_back(item);
+            Settings::addSearchPath(item);
         }
     }
 }
@@ -87,52 +84,56 @@ void initSearchPaths(){
 // more stuff will then be necessary to do
 bool missing_prefixes = false;
 
-Dependency::Dependency(std::string path)
+Dependency::Dependency(std::string path, const std::string& dependent_file)
 {
     char original_file_buffer[PATH_MAX];
     std::string original_file;
 
+    rtrim(path);
     if (isRpath(path))
     {
-        original_file = searchFilenameInRpaths(path);
+        original_file = searchFilenameInRpaths(path, dependent_file);
     }
-    else if (not realpath(rtrim(path).c_str(), original_file_buffer))
+    else if (realpath(rtrim(path).c_str(), original_file_buffer))
+    {
+        original_file = original_file_buffer;
+    }
+    else
     {
         std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
         original_file = path;
     }
-    else
-    {
-        original_file = original_file_buffer;
-    }
 
     // check if given path is a symlink
-    if (original_file != rtrim(path))
-    {
-        filename = stripPrefix(original_file);
-        prefix = original_file.substr(0, original_file.rfind("/")+1);
-        addSymlink(path);
-    }
-    else
-    {
-        filename = stripPrefix(path);
-        prefix = path.substr(0, path.rfind("/")+1);
-    }
+    if (original_file != path) addSymlink(path);
+
+    filename = stripPrefix(original_file);
+    prefix = original_file.substr(0, original_file.rfind("/")+1);
     
-    //check if the lib is in a known location
     if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
+
+    // check if this dependency is in /usr/lib, /System/Library, or in ignored list
+    if (!Settings::isPrefixBundled(prefix)) return;
+
+    // check if the lib is in a known location
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
         //the paths contains at least /usr/lib so if it is empty we have not initialized it
-        if( paths.empty() ) initSearchPaths();
+        int searchPathAmount = Settings::searchPathAmount();
+        if( searchPathAmount == 0 )
+        {
+            initSearchPaths();
+            searchPathAmount = Settings::searchPathAmount();
+        }
         
         //check if file is contained in one of the paths
-        for( size_t i=0; i<paths.size(); ++i)
+        for( int i=0; i<searchPathAmount; ++i)
         {
-            if (fileExists( paths[i]+filename ))
+            std::string search_path = Settings::searchPath(i);
+            if (fileExists( search_path+filename ))
             {
-                std::cout << "FOUND " << filename << " in " << paths[i] << std::endl;
-                prefix = paths[i];
+                std::cout << "FOUND " << filename << " in " << search_path << std::endl;
+                prefix = search_path;
                 missing_prefixes = true; //the prefix was missing
                 break;
             }
@@ -145,11 +146,10 @@ Dependency::Dependency(std::string path)
     {
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
-        
-        paths.push_back(getUserInputDirForFile(filename));
+
+        Settings::addSearchPath(getUserInputDirForFile(filename));
     }
-    
-    //new_name  = filename.substr(0, filename.find(".")) + ".dylib";
+
     new_name = filename;
 }
 
@@ -173,7 +173,7 @@ std::string Dependency::getInnerPath()
 }
 
 
-void Dependency::addSymlink(std::string s)
+void Dependency::addSymlink(const std::string& s)
 {
     // calling std::find on this vector is not near as slow as an extra invocation of install_name_tool
     if(std::find(symlinks.begin(), symlinks.end(), s) == symlinks.end()) symlinks.push_back(s);
@@ -207,7 +207,7 @@ void Dependency::copyYourself()
     }
 }
 
-void Dependency::fixFileThatDependsOnMe(std::string file_to_fix)
+void Dependency::fixFileThatDependsOnMe(const std::string& file_to_fix)
 {
     // for main lib file
     changeInstallName(file_to_fix, getOriginalPath(), getInnerPath());

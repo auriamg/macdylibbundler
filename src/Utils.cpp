@@ -69,7 +69,7 @@ void tokenize(const string& str, const char* delim, vector<string>* vectorarg)
 
 
 
-bool fileExists( std::string filename )
+bool fileExists(const std::string& filename)
 {
     if (access( filename.c_str(), F_OK ) != -1)
     {
@@ -93,10 +93,10 @@ bool fileExists( std::string filename )
     }
 }
 
-void copyFile(string from, string to)
+void copyFile(const string& from, const string& to)
 {
     bool override = Settings::canOverwriteFiles();
-    if(!override)
+    if( from != to && !override )
     {
         if(fileExists( to ))
         {
@@ -124,7 +124,7 @@ void copyFile(string from, string to)
     }
 }
 
-std::string system_get_output(std::string cmd)
+std::string system_get_output(const std::string& cmd)
 {
     FILE * command_output;
     char output[128];
@@ -161,7 +161,7 @@ std::string system_get_output(std::string cmd)
     return full_output;
 }
 
-int systemp(std::string& cmd)
+int systemp(const std::string& cmd)
 {
     std::cout << "    " << cmd.c_str() << std::endl;
     return system(cmd.c_str());
@@ -185,9 +185,8 @@ std::string getUserInputDirForFile(const std::string& filename)
         auto searchPath = Settings::searchPath(n);
         if( !searchPath.empty() && searchPath[ searchPath.size()-1 ] != '/' ) searchPath += "/";
 
-        if( !fileExists( searchPath+filename ) ) {
-            continue;
-        } else {
+        if( fileExists( searchPath+filename ) )
+        {
             std::cerr << (searchPath+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
             return searchPath;
         }
@@ -213,6 +212,7 @@ std::string getUserInputDirForFile(const std::string& filename)
         else
         {
             std::cerr << (prefix+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
+            Settings::addSearchPath(prefix);
             return prefix;
         }
     }
