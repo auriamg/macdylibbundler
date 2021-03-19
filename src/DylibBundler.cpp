@@ -312,16 +312,16 @@ void collectDependencies(const std::string& filename)
 void collectSubDependencies()
 {
     // print status to user
-    int dep_amount = deps.size();
+    size_t dep_amount = deps.size();
     
     // recursively collect each dependencie's dependencies
     while(true)
     {
         dep_amount = deps.size();
-        for (const auto& dep : deps)
+        for (size_t n=0; n<dep_amount; n++)
         {
             std::cout << "."; fflush(stdout);
-            std::string original_path = dep.getOriginalPath();
+            std::string original_path = deps[n].getOriginalPath();
             if (isRpath(original_path)) original_path = searchFilenameInRpaths(original_path);
 
             collectDependencies(original_path);
