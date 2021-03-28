@@ -41,7 +41,7 @@ class Dependency
 
     bool is_framework;
 public:
-    Dependency(std::string path, std::string dependent_file);
+    Dependency(std::string path, const std::string& dependent_file);
 
     void print() const;
 
@@ -52,7 +52,7 @@ public:
         
     bool isFramework(){ return is_framework; }
 
-    void addSymlink(std::string s);
+    void addSymlink(const std::string& s);
     int getSymlinkAmount() const{ return symlinks.size(); }
 
     std::string getSymlink(const int i) const{ return symlinks[i]; }

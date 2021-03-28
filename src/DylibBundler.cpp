@@ -26,9 +26,9 @@ THE SOFTWARE.
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include <regex>
 #include <set>
 #include <map>
+#include <regex>
 #include <sys/param.h>
 #ifdef __linux
 #include <linux/limits.h>
@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "Utils.h"
 #include "Settings.h"
 #include "Dependency.h"
+
 using namespace std;
 
 std::vector<Dependency> deps;
@@ -52,10 +53,9 @@ bool qt_plugins_called = false;
 
 void changeLibPathsOnFile(std::string file_to_fix)
 {
-    if (deps_collected.find(file_to_fix) == deps_collected.end()
-        || rpaths_collected.find(file_to_fix) == rpaths_collected.end())
+    if (deps_collected.find(file_to_fix) == deps_collected.end())
     {
-        collectDependenciesRpaths(file_to_fix);
+        collectDependencies(file_to_fix);
     }
     if (!Settings::quietOutput()) std::cout << "\n";
     std::cout << "* Fixing dependencies on " << file_to_fix.c_str() << std::endl;
@@ -64,6 +64,20 @@ void changeLibPathsOnFile(std::string file_to_fix)
     for(int n=0; n<dep_amount; n++)
     {
         deps_per_file[file_to_fix][n].fixFileThatDependsOnMe(file_to_fix);
+    }
+}
+
+bool isRpath(const std::string& path)
+{
+    return path.find("@rpath") == 0 || path.find("@loader_path") == 0;
+}
+
+void collectRpaths(const std::string& filename)
+{
+    if (!fileExists(filename))
+    {
+        std::cerr << "\n/!\\ WARNING : can't collect rpaths for nonexistent file '" << filename << "'\n";
+        return;
     }
 }
 

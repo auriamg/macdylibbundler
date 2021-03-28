@@ -46,16 +46,16 @@ void initSearchPaths()
     //Check the same paths the system would search for dylibs
     std::string searchPaths;
     char *dyldLibPath = std::getenv("DYLD_LIBRARY_PATH");
-    if( dyldLibPath!=0 )
+    if (dyldLibPath != nullptr)
         searchPaths = dyldLibPath;
     dyldLibPath = std::getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
-    if (dyldLibPath != 0)
+    if (dyldLibPath != nullptr)
     {
         if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
         searchPaths += dyldLibPath;
     }
     dyldLibPath = std::getenv("DYLD_FALLBACK_LIBRARY_PATH");
-    if (dyldLibPath!=0 )
+    if (dyldLibPath != nullptr)
     {
         if (!searchPaths.empty() && searchPaths[ searchPaths.size()-1 ] != ':') searchPaths += ":";
         searchPaths += dyldLibPath;
@@ -72,39 +72,44 @@ void initSearchPaths()
     }
 }
 
+// if some libs are missing prefixes, this will be set to true
+// more stuff will then be necessary to do
+bool missing_prefixes = false;
 
-Dependency::Dependency(std::string path, std::string dependent_file)
+Dependency::Dependency(std::string path, const std::string& dependent_file)
     : is_framework(false)
 {
     char original_file_buffer[PATH_MAX];
     std::string original_file;
-    std::string warning_msg;
 
     rtrim(path);
-
     if (isRpath(path))
     {
         original_file = searchFilenameInRpaths(path, dependent_file);
     }
-    else if (not realpath(path.c_str(), original_file_buffer))
+    else if (realpath(rtrim(path).c_str(), original_file_buffer))
     {
-        warning_msg = "\n/!\\ WARNING : Cannot resolve path '" + path + "'\n";
-        original_file = path;
+        original_file = original_file_buffer;
     }
     else
     {
-        original_file = original_file_buffer;
+        std::cerr << "\n/!\\ WARNING : Cannot resolve path '" << path.c_str() << "'" << std::endl;
+        original_file = path;
     }
 
     // check if given path is a symlink
     if (original_file != path) addSymlink(path);
 
-    prefix = filePrefix(original_file);
     filename = stripPrefix(original_file);
+    // prefix = filePrefix(original_file);
+    prefix = original_file.substr(0, original_file.rfind("/")+1);
+     
+    if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
 
     // check if this dependency is in /usr/lib, /System/Library, or in ignored list
     if (!Settings::isPrefixBundled(prefix)) return;
 
+    // check if the lib is in a known location
     if (original_file.find(".framework") != std::string::npos)
     {
         is_framework = true;
@@ -114,68 +119,66 @@ Dependency::Dependency(std::string path, std::string dependent_file)
         prefix = filePrefix(framework_root);
         filename = framework_name + "/" + framework_path;
     }
-    
+
     //check if the lib is in a known location
     if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
     if( prefix.empty() || !fileExists( prefix+filename ) )
     {
         //the paths contains at least /usr/lib so if it is empty we have not initialized it
-        size_t search_path_count = Settings::searchPathAmount();
-        if ( search_path_count == 0 ) initSearchPaths();
+        size_t searchPathAmount = Settings::searchPathAmount();
+        if( searchPathAmount == 0 )
+        {
+            initSearchPaths();
+            searchPathAmount = Settings::searchPathAmount();
+        }
         
         //check if file is contained in one of the paths
-        search_path_count = Settings::searchPathAmount();
-        for(size_t i=0; i<search_path_count; ++i)
+        for( size_t i=0; i<searchPathAmount; ++i)
         {
             std::string search_path = Settings::searchPath(i);
             if (fileExists( search_path+filename ))
             {
-                warning_msg += "FOUND " + filename + " in " + search_path + "\n";
+                std::cout << "FOUND " << filename << " in " << search_path << std::endl;
                 prefix = search_path;
-                Settings::missingPrefixes(true); //the prefix was missing
+                missing_prefixes = true; //the prefix was missing
                 break;
             }
         }
     }
-
-    if ( !Settings::quietOutput() ) std::cout << warning_msg;
     
     //If the location is still unknown, ask the user for search path
     if( !Settings::isPrefixIgnored(prefix)
         && ( prefix.empty() || !fileExists( prefix+filename ) ) )
     {
-        if ( !Settings::quietOutput() )
-        {
-            std::cerr << "\n/!\\ WARNING: Dependency " << filename << " of " << dependent_file << " not found\n";
-        }
-        Settings::missingPrefixes(true);
-        Settings::addSearchPath( getUserInputDirForFile(filename, dependent_file) );
+        std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
+        missing_prefixes = true;
+
+        Settings::addSearchPath(getUserInputDirForFile(filename));
     }
-    
+
     new_name = filename;
 }
 
 void Dependency::print() const
 {
-    std::cout << "\n* " << filename.c_str() << " from " << prefix.c_str() << std::endl;
+    std::cout << std::endl;
+    std::cout << " * " << filename.c_str() << " from " << prefix.c_str() << std::endl;
     
-    for (const auto& symlink : symlinks)
-    {
-        std::cout << "    symlink --> " << symlink << std::endl;
-    }
+    const int symamount = symlinks.size();
+    for(int n=0; n<symamount; n++)
+        std::cout << "     symlink --> " << symlinks[n].c_str() << std::endl;;
 }
 
 std::string Dependency::getInstallPath() const
 {
     return Settings::destFolder() + new_name;
 }
-
 std::string Dependency::getInnerPath() const
 {
     return Settings::inside_lib_path() + new_name;
 }
 
-void Dependency::addSymlink(std::string s)
+void Dependency::addSymlink(const std::string& s)
 {
     // calling std::find on this vector is not near as slow as an extra invocation of install_name_tool
     if(std::find(symlinks.begin(), symlinks.end(), s) == symlinks.end()) symlinks.push_back(s);
@@ -239,7 +242,7 @@ void Dependency::fixFileThatDependsOnMe(const std::string& file_to_fix) const
     }
     
     // FIXME - hackish
-    if(Settings::missingPrefixes())
+    if(missing_prefixes)
     {
         // for main lib file
         changeInstallName(file_to_fix, filename, getInnerPath());
