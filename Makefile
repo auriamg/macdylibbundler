@@ -1,6 +1,7 @@
 DESTDIR=
 PREFIX=/usr/local
-CXXFLAGS=-O2 -std=c++11
+CXXFLAGS?=-O2
+CXXFLAGS+=-std=c++11
 
 CPP_FILES=$(wildcard src/*.cpp)
 OBJ_FILES=$(notdir $(CPP_FILES:.cpp=.o))
