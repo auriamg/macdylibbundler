@@ -1,5 +1,5 @@
 DESTDIR=
-PREFIX=/usr/local
+PREFIX?=/usr/local
 CXXFLAGS?=-O2
 CXXFLAGS+=-std=c++11
 
