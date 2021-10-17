@@ -25,7 +25,15 @@ It usually involves 2 actions :
 
 Installation
 ------------
-In the terminal, cd to the main directory of dylibbundler and type "make". You can install with "sudo make install".
+In the terminal, cd to the main directory of dylibbundler and type ```make```. You can install with ```sudo make install```.
+
+**Install with MacPorts**
+
+```sudo port install dylibbundler```
+
+**Install with Brew**
+
+```brew install dylibbundler```
 
 
 Feedback / Contact
