@@ -1,0 +1,7 @@
+*.o
+dylibbundler
+.idea/
+.vscode/
+build/
+cmake-build-*/
+.DS_Store

@@ -44,4 +44,7 @@ int systemp(const std::string& cmd);
 void changeInstallName(const std::string& binary_file, const std::string& old_name, const std::string& new_name);
 std::string getUserInputDirForFile(const std::string& filename);
 
+// sign `file` with an ad-hoc code signature: required for ARM (Apple Silicon) binaries
+void adhocCodeSign(const std::string& file);
+
 #endif
