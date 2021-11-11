@@ -114,7 +114,7 @@ std::string searchFilenameInRpaths(const std::string& rpath_file, const std::str
 {
     char buffer[PATH_MAX];
     std::string fullpath;
-    std::string suffix = rpath_file.substr(rpath_file.rfind('/')+1);
+    std::string suffix = std::regex_replace(rpath_file, std::regex("^@[a-z_]+path/"), "");
 
     const auto check_path = [&](std::string path)
     {
