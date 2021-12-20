@@ -41,7 +41,7 @@ THE SOFTWARE.
  
  */
 
-const std::string VERSION = "1.0.2";
+const std::string VERSION = "1.0.3";
 
 
 // FIXME - no memory management is done at all (anyway the program closes immediately so who cares?)
@@ -62,6 +62,7 @@ void showHelp()
     std::cout << "-of, --overwrite-files (allow overwriting files in output directory)" << std::endl;
     std::cout << "-od, --overwrite-dir (totally overwrite output directory if it already exists. implies --create-dir)" << std::endl;
     std::cout << "-cd, --create-dir (creates output directory if necessary)" << std::endl;
+    std::cout << "-ns, --no-codesign (disables ad-hoc codesigning)" << std::endl;
     std::cout << "-i, --ignore <location to ignore> (will ignore libraries in this directory)" << std::endl;
     std::cout << "-h, --help" << std::endl;
 }
@@ -116,6 +117,11 @@ int main (int argc, char * const argv[])
         {
             Settings::canCreateDir(true);
             continue;    
+        }
+        else if(strcmp(argv[i],"-ns")==0 or strcmp(argv[i],"--no-codesign")==0)
+        {
+            Settings::canCodesign(false);
+            continue;
         }
         else if(strcmp(argv[i],"-h")==0 or strcmp(argv[i],"--help")==0)
         {

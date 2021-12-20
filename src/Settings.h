@@ -44,6 +44,9 @@ void canOverwriteDir(bool permission);
 bool canCreateDir();
 void canCreateDir(bool permission);
 
+bool canCodesign();
+void canCodesign(bool permission);
+
 bool bundleLibs();
 void bundleLibs(bool on);
 
