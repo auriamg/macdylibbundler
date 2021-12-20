@@ -31,14 +31,17 @@ namespace Settings
 bool overwrite_files = false;
 bool overwrite_dir = false;
 bool create_dir = false;
+bool codesign = true;
 
 bool canOverwriteFiles(){ return overwrite_files; }
 bool canOverwriteDir(){ return overwrite_dir; }
 bool canCreateDir(){ return create_dir; }
+bool canCodesign(){ return codesign; }
 
 void canOverwriteFiles(bool permission){ overwrite_files = permission; }
 void canOverwriteDir(bool permission){ overwrite_dir = permission; }
 void canCreateDir(bool permission){ create_dir = permission; }
+void canCodesign(bool permission){ codesign = permission; }
 
 
 bool bundleLibs_bool = false;
