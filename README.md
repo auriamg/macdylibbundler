@@ -84,6 +84,9 @@ fixes dependencies where bundled libraries depend on each other. If this option 
 `-cd`, `--create-dir`
 > If the output directory does not exist, create it.
 
+`-ns`, `--no-codesign`
+> Disable ad-hoc code signing.
+
 A command may look like
 `% dylibbundler -od -b -x ./HelloWorld.app/Contents/MacOS/helloworld -d ./HelloWorld.app/Contents/libs/`
 
