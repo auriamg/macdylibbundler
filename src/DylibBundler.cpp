@@ -75,7 +75,7 @@ void collectRpaths(const std::string& filename)
         return;
     }
 
-    std::string cmd = "otool -l " + filename;
+    std::string cmd = "otool -l \"" + filename + "\"";
     std::string output = system_get_output(cmd);
 
     std::vector<std::string> lc_lines;
