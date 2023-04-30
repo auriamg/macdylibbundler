@@ -48,6 +48,10 @@ bool bundleLibs_bool = false;
 bool bundleLibs(){ return bundleLibs_bool; }
 void bundleLibs(bool on){ bundleLibs_bool = on; }
 
+bool searchSystemLib_bool = false;
+bool searchSystemLib(){ return searchSystemLib_bool; }
+void searchSystemLib(bool on){ searchSystemLib_bool = on; }
+
 
 std::string dest_folder_str = "./libs/";
 std::string destFolder(){ return dest_folder_str; }
@@ -102,7 +106,7 @@ bool isPrefixBundled(const std::string& prefix)
 {
     if(prefix.find(".framework") != std::string::npos) return false;
     if(prefix.find("@executable_path") != std::string::npos) return false;
-    if(isSystemLibrary(prefix)) return false;
+    if(isSystemLibrary(prefix) && !searchSystemLib()) return false;
     if(isPrefixIgnored(prefix)) return false;
     
     return true;

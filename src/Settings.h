@@ -50,6 +50,9 @@ void canCodesign(bool permission);
 bool bundleLibs();
 void bundleLibs(bool on);
 
+bool searchSystemLib();
+void searchSystemLib(bool on);
+
 std::string destFolder();
 void destFolder(const std::string& path);
 

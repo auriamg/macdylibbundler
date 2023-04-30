@@ -64,6 +64,9 @@ fixes dependencies where bundled libraries depend on each other. If this option 
 `-i`, `--ignore` (path)
 > Dylibs in (path) will be ignored. By default, dylibbundler will ignore libraries installed in `/usr/lib` since they are assumed to be present by default on all OS X installations.*(It is usually recommend not to install additional stuff in `/usr/`, always use ` /usr/local/` or another prefix to avoid confusion between system libs and libs you added yourself)*
 
+`-bs`, `--bundle-system-libs`
+> By default, dylibbundler will ignore libraries installed in `/usr/lib` and `/System/Library`, this disables that default and searches both.
+
 `-d`, `--dest-dir` (directory)
 > Sets the name of the directory in which distribution-ready dylibs will be placed, relative to the current working directory. (Default is `./libs`) For an app bundle, it is often convenient to set it to something like `./MyApp.app/Contents/libs`.
 
