@@ -140,6 +140,11 @@ int main (int argc, char * const argv[])
             Settings::addSearchPath(argv[i]);
             continue;
         }
+        if(strcmp(argv[i],"-v")==0 or strcmp(argv[i],"--version")==0)
+        {
+            std::cout << VERSION << std::endl;
+            exit(0);
+        }
         else if(i>0)
         {
             // if we meet an unknown flag, abort
