@@ -41,7 +41,7 @@ THE SOFTWARE.
  
  */
 
-const std::string VERSION = "1.0.5";
+const std::string VERSION = "1.0.6";
 
 
 // FIXME - no memory management is done at all (anyway the program closes immediately so who cares?)
@@ -56,6 +56,7 @@ void showHelp()
     
     std::cout << "-x, --fix-file <file to fix (executable or app plug-in)>" << std::endl;
     std::cout << "-b, --bundle-deps" << std::endl;
+    std::cout << "-bs, --bundle-system-libs" << std::endl;
     std::cout << "-d, --dest-dir <directory to send bundled libraries (relative to cwd)>" << std::endl;
     std::cout << "-p, --install-path <'inner' path of bundled libraries (usually relative to executable, by default '@executable_path/../libs/')>" << std::endl;
     std::cout << "-s, --search-path <directory to add to list of locations searched>" << std::endl;
@@ -82,6 +83,11 @@ int main (int argc, char * const argv[])
         else if(strcmp(argv[i],"-b")==0 or strcmp(argv[i],"--bundle-deps")==0)
         {
             Settings::bundleLibs(true);
+            continue;    
+        }
+        else if(strcmp(argv[i],"-bs")==0 or strcmp(argv[i],"--bundle-system-libs")==0)
+        {
+            Settings::searchSystemLib(true);
             continue;    
         }
         else if(strcmp(argv[i],"-p")==0 or strcmp(argv[i],"--install-path")==0)
@@ -126,13 +132,18 @@ int main (int argc, char * const argv[])
         else if(strcmp(argv[i],"-h")==0 or strcmp(argv[i],"--help")==0)
         {
             showHelp();
-            exit(0);    
+            exit(0);
         }
         if(strcmp(argv[i],"-s")==0 or strcmp(argv[i],"--search-path")==0)
         {
             i++;
             Settings::addSearchPath(argv[i]);
             continue;
+        }
+        if(strcmp(argv[i],"-v")==0 or strcmp(argv[i],"--version")==0)
+        {
+            std::cout << VERSION << std::endl;
+            exit(0);
         }
         else if(i>0)
         {

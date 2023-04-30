@@ -303,7 +303,7 @@ void collectDependencies(const std::string& filename)
 
         // trim useless info, keep only library name
         std::string dep_path = line.substr(1, line.rfind(" (") - 1);
-        if (Settings::isSystemLibrary(dep_path)) continue;
+        if (Settings::isSystemLibrary(dep_path) && !Settings::searchSystemLib()) continue;
 
         addDependency(dep_path, filename);
     }

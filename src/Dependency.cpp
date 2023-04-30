@@ -130,6 +130,7 @@ Dependency::Dependency(std::string path, const std::string& dependent_file)
         for( int i=0; i<searchPathAmount; ++i)
         {
             std::string search_path = Settings::searchPath(i);
+            if (search_path[ search_path.size()-1 ] != '/') search_path += "/";  // Add this line to fix missing "/" from path in next line
             if (fileExists( search_path+filename ))
             {
                 std::cout << "FOUND " << filename << " in " << search_path << std::endl;
