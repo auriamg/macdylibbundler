@@ -116,7 +116,7 @@ std::string searchFilenameInRpaths(const std::string& rpath_file, const std::str
 {
     char buffer[PATH_MAX];
     std::string fullpath;
-    std::string suffix = std::regex_replace(rpath_file, std::regex("^@[a-z_]+path/"), "");
+    std::string suffix = rpath_file.substr(rpath_file.rfind('/')+1); 
 
     const auto check_path = [&](std::string path)
     {
@@ -163,10 +163,21 @@ std::string searchFilenameInRpaths(const std::string& rpath_file, const std::str
 
     if (fullpath.empty())
     {
-        const int searchPathAmount = Settings::searchPathAmount();
+        std::cout << "\n search file:" << suffix;
+        int searchPathAmount = Settings::searchPathAmount();
+        std::cout << "\n search path count:" << searchPathAmount;
+        if (searchPathAmount==0)
+        {
+            Settings::addSearchPath("/usr/local/");
+            searchPathAmount = 1;
+        }
+            
         for (int n=0; n<searchPathAmount; n++)
         {
             std::string search_path = Settings::searchPath(n);
+            if (search_path[search_path.size()-1] != '/') search_path += "/";
+
+            std::cout << "\n search path:" << search_path<< " file " << search_path+suffix;
             if (fileExists(search_path+suffix))
             {
                 fullpath = search_path + suffix;

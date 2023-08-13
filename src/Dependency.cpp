@@ -147,7 +147,9 @@ Dependency::Dependency(std::string path, const std::string& dependent_file)
         std::cerr << "\n/!\\ WARNING : Library " << filename << " has an incomplete name (location unknown)" << std::endl;
         missing_prefixes = true;
 
-        Settings::addSearchPath(getUserInputDirForFile(filename));
+        auto path = getUserInputDirForFile(filename);
+        if (!path.empty())
+            Settings::addSearchPath(path);
     }
 
     new_name = filename;
