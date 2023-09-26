@@ -33,6 +33,9 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <memory>
+#include <vector> // For std::vector
+#include <fstream>
 using namespace std;
 
 /*
@@ -67,6 +70,18 @@ void tokenize(const string& str, const char* delim, vector<string>* vectorarg)
     
 }
 
+vector<std::string> exec(const char *cmd) {
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) return {};
+    char buffer[128];
+    vector<std::string> outputs;
+    while (!feof(pipe.get())) {
+        if (fgets(buffer, 256, pipe.get()) != NULL) {
+            outputs.emplace_back(buffer);
+        }
+    }
+    return outputs;
+}
 
 
 bool fileExists(const std::string& filename)
@@ -183,39 +198,16 @@ std::string getUserInputDirForFile(const std::string& filename)
     for(int n=0; n<searchPathAmount; n++)
     {
         auto searchPath = Settings::searchPath(n);
-        if( !searchPath.empty() && searchPath[ searchPath.size()-1 ] != '/' ) searchPath += "/";
+        string cmd = "find " + searchPath + " -name " + filename;
+        vector<string> files = exec(cmd.c_str());
 
-        if( fileExists( searchPath+filename ) )
-        {
-            std::cerr << (searchPath+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
-            return searchPath;
+        if (!files.empty()) {
+            string f = files.at(0);
+            std::cout << "found file "<< filename << " at " << f;
+            return files.at(0).substr(0, f.length() - filename.length()-1);
         }
     }
-
-    while (true)
-    {
-        std::cout << "Please specify the directory where this library is located (or enter 'quit' to abort): ";  fflush(stdout);
-
-        std::string prefix;
-        std::cin >> prefix;
-        std::cout << std::endl;
-
-        if(prefix.compare("quit")==0) exit(1);
-
-        if( !prefix.empty() && prefix[ prefix.size()-1 ] != '/' ) prefix += "/";
-
-        if( !fileExists( prefix+filename ) )
-        {
-            std::cerr << (prefix+filename) << " does not exist. Try again" << std::endl;
-            continue;
-        }
-        else
-        {
-            std::cerr << (prefix+filename) << " was found. /!\\ DYLIBBUNDLER MAY NOT CORRECTLY HANDLE THIS DEPENDENCY: Manually check the executable with 'otool -L'" << std::endl;
-            Settings::addSearchPath(prefix);
-            return prefix;
-        }
-    }
+    return {};
 }
 
 void adhocCodeSign(const std::string& file)
