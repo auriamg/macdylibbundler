@@ -34,7 +34,7 @@ bool isSystemLibrary(const std::string& prefix);
 bool isPrefixBundled(const std::string& prefix);
 bool isPrefixIgnored(const std::string& prefix);
 void ignore_prefix(std::string prefix);
-    
+
 bool canOverwriteFiles();
 void canOverwriteFiles(bool permission);
 
@@ -54,6 +54,7 @@ std::string destFolder();
 void destFolder(const std::string& path);
 
 void addFileToFix(const std::string& path);
+void addFolderToFix(const std::string& path);
 int fileToFixAmount();
 std::string fileToFix(const int n);
 
