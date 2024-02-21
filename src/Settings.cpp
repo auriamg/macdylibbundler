@@ -23,7 +23,11 @@ THE SOFTWARE.
  */
 
 #include "Settings.h"
+#include "Utils.h"
+
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 namespace Settings
 {
@@ -32,6 +36,7 @@ bool overwrite_files = false;
 bool overwrite_dir = false;
 bool create_dir = false;
 bool codesign = true;
+std::string codesign_identity = "-";
 
 bool canOverwriteFiles(){ return overwrite_files; }
 bool canOverwriteDir(){ return overwrite_dir; }
@@ -43,6 +48,8 @@ void canOverwriteDir(bool permission){ overwrite_dir = permission; }
 void canCreateDir(bool permission){ create_dir = permission; }
 void canCodesign(bool permission){ codesign = permission; }
 
+std::string signingIdentity(){ return codesign_identity; }
+void signingIdentity(const std::string& str) { codesign_identity = str; }
 
 bool bundleLibs_bool = false;
 bool bundleLibs(){ return bundleLibs_bool; }
@@ -62,6 +69,51 @@ std::vector<std::string> files;
 void addFileToFix(const std::string& path){ files.push_back(path); }
 int fileToFixAmount(){ return files.size(); }
 std::string fileToFix(const int n){ return files[n]; }
+
+namespace {
+
+bool isMachOFile(const std::string& path) {
+    auto file = std::ifstream{path, std::ios::binary};
+    if (!file) {
+        return false;
+    }
+
+    // Read the first 4 bytes
+    char buffer[4];
+    if (!file.read(buffer, 4)) {
+        return false;
+    }
+
+    // Check if the magic number of the file looks like Mach-O file...
+    if (std::memcmp(buffer, "\xcf\xfa\xed\xfe", 4) == 0 || std::memcmp(buffer, "\xce\xfa\xed\xfe", 4) == 0) {
+        // Now make sure by calling the `file` command...
+        static const auto prefix = std::string{"Mach-O"};
+        auto type = system_get_output("file -b \"" + path + "\"");
+        return type.compare(0, prefix.length(), prefix) == 0;
+    }
+
+    return false;
+}
+
+}
+
+void addFolderToFix(const std::string& path)
+{
+    // we use find as a silly way to list all files inside the folder without
+    // doing the recursion in C++, which without C++17 std::filesystem is a bit
+    // cumbersome...
+    auto all_files = std::vector<std::string>{};
+    tokenize(system_get_output("find \"" + path + "\""), "\n", &all_files);
+
+    auto prefix = std::string{"Mach-O"};
+    for (auto&& file : all_files) {
+        if (isMachOFile(file)) {
+            std::cout << "  * Found file " << file << std::endl;
+            files.push_back(std::move(file));
+        }
+    }
+
+}
 
 std::string inside_path_str = "@executable_path/../libs/";
 std::string inside_lib_path(){ return inside_path_str; }
@@ -104,7 +156,7 @@ bool isPrefixBundled(const std::string& prefix)
     if(prefix.find("@executable_path") != std::string::npos) return false;
     if(isSystemLibrary(prefix)) return false;
     if(isPrefixIgnored(prefix)) return false;
-    
+
     return true;
 }
 
