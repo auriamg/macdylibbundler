@@ -129,6 +129,12 @@ int main (int argc, char * const argv[])
             Settings::canCodesign(false);
             continue;
         }
+        else if(strcmp(argv[i],"-si")==0 or strcmp(argv[i],"--signing-identity")==0)
+        {
+            i++;
+            Settings::signingIdentity(argv[i]);
+            continue;
+        }
         else if(strcmp(argv[i],"-h")==0 or strcmp(argv[i],"--help")==0)
         {
             showHelp();

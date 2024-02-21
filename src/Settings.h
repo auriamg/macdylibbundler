@@ -47,6 +47,9 @@ void canCreateDir(bool permission);
 bool canCodesign();
 void canCodesign(bool permission);
 
+std::string signingIdentity();
+void signingIdentity(const std::string& str);
+
 bool bundleLibs();
 void bundleLibs(bool on);
 

@@ -36,6 +36,7 @@ bool overwrite_files = false;
 bool overwrite_dir = false;
 bool create_dir = false;
 bool codesign = true;
+std::string codesign_identity = "-";
 
 bool canOverwriteFiles(){ return overwrite_files; }
 bool canOverwriteDir(){ return overwrite_dir; }
@@ -47,6 +48,8 @@ void canOverwriteDir(bool permission){ overwrite_dir = permission; }
 void canCreateDir(bool permission){ create_dir = permission; }
 void canCodesign(bool permission){ codesign = permission; }
 
+std::string signingIdentity(){ return codesign_identity; }
+void signingIdentity(const std::string& str) { codesign_identity = str; }
 
 bool bundleLibs_bool = false;
 bool bundleLibs(){ return bundleLibs_bool; }
